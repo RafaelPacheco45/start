@@ -1,0 +1,53 @@
+var AUTOZAP_API_BASE_URL = "https://aip.autozap.log.br";
+
+window.AUTOZAP_START_CONFIG = {
+  version: "0.3.0",
+  basePath: "./",
+  apiBaseUrl: AUTOZAP_API_BASE_URL,
+  mainAutoZapUrl: "https://autozap.log.br",
+  onlineStoreHelpUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20ajuda%20para%20criar%20minha%20loja%20online%20%2F%20site.",
+  onlineStoreQuoteUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20para%20criar%20minha%20loja%20online%20com%20a%20AutoZap%20Start.",
+  mockMode: false,
+  requestTimeoutMs: 12000,
+  turnstileSiteKey: "",
+  limits: {
+    anonymousVisualGenerations: 1,
+    anonymousTextGenerations: 20,
+    dailyLimit: 30,
+  },
+  routes: {
+    session: `${AUTOZAP_API_BASE_URL}/start/session`,
+    suppliers: `${AUTOZAP_API_BASE_URL}/start/suppliers`,
+    supplierProducts: `${AUTOZAP_API_BASE_URL}/start/suppliers/:id/products`,
+    lead: `${AUTOZAP_API_BASE_URL}/start/lead`,
+    leads: `${AUTOZAP_API_BASE_URL}/start/lead`,
+    diagnostic: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
+    image: `${AUTOZAP_API_BASE_URL}/start/image`,
+    identity: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    logo: `${AUTOZAP_API_BASE_URL}/ai/start-image`,
+    bio: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    posts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    stock: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
+    scripts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
+    saveSelectedProducts: `${AUTOZAP_API_BASE_URL}/start/selected-products`,
+    exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
+    adminMetrics: `${AUTOZAP_API_BASE_URL}/start/admin/metrics`,
+    recentLeads: `${AUTOZAP_API_BASE_URL}/start/admin/leads`,
+    recentSessions: `${AUTOZAP_API_BASE_URL}/start/admin/sessions`,
+  },
+  devFallbackRoutes: {
+    session: `${AUTOZAP_API_BASE_URL}/start/session`,
+    identity: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    logo: `${AUTOZAP_API_BASE_URL}/ai/start-image`,
+    bio: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    posts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    stock: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
+    scripts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
+    preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
+    leads: `${AUTOZAP_API_BASE_URL}/start/lead`,
+    exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
+  },
+};
+
+window.AutoZapConfig = window.AUTOZAP_START_CONFIG;

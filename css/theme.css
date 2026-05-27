@@ -1,0 +1,45 @@
+:root {
+  color-scheme: light;
+  --az-ink: #07133f;
+  --az-text: #1d2747;
+  --az-muted: #6f768e;
+  --az-line: #e8ecf3;
+  --az-blue: #087cff;
+  --az-blue-dark: #005dff;
+  --az-green: #0faa62;
+  --az-purple: #7a3ff0;
+  --az-orange: #ff7a1a;
+  --az-bg: #f5f9ff;
+  --az-soft-blue: #eef6ff;
+  --az-soft-green: #eaf8f0;
+  --az-soft-purple: #f2edff;
+  --az-soft-orange: #fff1e8;
+  --az-card: #ffffff;
+  --az-radius-sm: 12px;
+  --az-radius: 16px;
+  --az-radius-lg: 24px;
+  --az-shadow-sm: 0 10px 28px rgba(7, 19, 63, .045);
+  --az-shadow: 0 18px 52px rgba(7, 19, 63, .08);
+  --az-shadow-blue: 0 16px 30px rgba(0, 96, 255, .22);
+  --az-space-1: 6px;
+  --az-space-2: 10px;
+  --az-space-3: 14px;
+  --az-space-4: 18px;
+  --az-space-5: 24px;
+  --az-speed: 220ms;
+  --az-ease: cubic-bezier(.22, .8, .25, 1);
+}
+
+@keyframes azFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes azPulse {
+  0%, 100% { transform: scale(1); opacity: .95; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes azSpin {
+  to { transform: rotate(360deg); }
+}

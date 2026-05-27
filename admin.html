@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin AutoZap Start</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/theme.css">
+    <link rel="stylesheet" href="./css/admin.css">
+  </head>
+  <body>
+    <aside class="admin-sidebar">
+      <img src="./assets/autozap-logo-mark.png" alt="AutoZap">
+      <strong>AutoZap Start Admin</strong>
+      <span>Painel mockado para operação e custos.</span>
+    </aside>
+
+    <main class="admin-main">
+      <header>
+        <div>
+          <h1>Painel admin</h1>
+          <p>Visão inicial de sessões, leads, gerações e conversões.</p>
+          <small id="adminMeta">Carregando dados mockados...</small>
+        </div>
+        <a href="./desktop.html">Voltar ao site</a>
+      </header>
+
+      <section class="metric-grid">
+        <article><span>Sessões iniciadas</span><strong id="metricSessions">0</strong></article>
+        <article><span>Lojas criadas</span><strong id="metricStores">0</strong></article>
+        <article><span>Leads capturados</span><strong id="metricLeads">0</strong></article>
+        <article><span>Gerações de texto</span><strong id="metricText">0</strong></article>
+        <article><span>Gerações de imagem</span><strong id="metricImages">0</strong></article>
+        <article><span>Custo estimado</span><strong id="metricCost">R$ 0</strong></article>
+        <article><span>Abusos bloqueados</span><strong id="metricBlocks">0</strong></article>
+        <article><span>Conversões AutoZap</span><strong id="metricConversions">0</strong></article>
+      </section>
+
+      <section class="analytics-grid">
+        <article class="chart-card">
+          <div><strong>Crescimento diário</strong><span>Últimos 7 dias</span></div>
+          <div class="bar-chart" id="growthChart"></div>
+        </article>
+        <article class="chart-card">
+          <div><strong>Funil AutoZap</strong><span>Da sessão à conversão</span></div>
+          <div class="funnel">
+            <span style="--w:100%">Sessões</span>
+            <span style="--w:62%">Identidades</span>
+            <span style="--w:38%">Leads</span>
+            <span style="--w:22%">Conversões</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="table-card">
+        <h2>Leads recentes</h2>
+        <table>
+          <thead><tr><th>Contato</th><th>Tipo</th><th>Loja</th><th>Cidade</th><th>Progresso</th></tr></thead>
+          <tbody id="leadRows"></tbody>
+        </table>
+      </section>
+
+      <section class="table-card">
+        <h2>Sessões recentes</h2>
+        <table>
+          <thead><tr><th>ID</th><th>Cidade</th><th>Loja</th><th>Status</th><th>Risco</th></tr></thead>
+          <tbody id="sessionRows"></tbody>
+        </table>
+      </section>
+    </main>
+    <script src="./js/config.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/admin.js"></script>
+  </body>
+</html>

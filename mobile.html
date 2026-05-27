@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AutoZap Start Mobile</title>
+    <link rel="stylesheet" href="./css/theme.css">
+    <link rel="stylesheet" href="./css/mobile.css">
+  </head>
+  <body>
+    <main class="mobile-shell">
+      <section class="phone" aria-label="AutoZap Start">
+        <header class="flow-top">
+          <button id="backBtn" class="back-btn" type="button" aria-label="Voltar">&lsaquo;</button>
+          <div class="progress-area">
+            <div id="progressSegments" class="segments" aria-hidden="true"></div>
+            <span id="stepLabel">Passo 1 de 7</span>
+            <strong id="progressPercent">Sua loja está 0% pronta</strong>
+          </div>
+        </header>
+
+        <section class="step active splash-step" data-step="0">
+          <div class="splash-shape one"></div>
+          <div class="splash-shape two"></div>
+          <div class="splash-shape three"></div>
+          <div class="splash-spot a"></div>
+          <div class="splash-spot b"></div>
+          <div class="splash-spot c"></div>
+          <div class="splash-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="splash-content">
+            <img class="main-logo" src="./assets/logo.gif" alt="Mascote AutoZap">
+            <span class="splash-kicker">✦ COM AJUDA DA IA</span>
+            <h1>Monte sua loja<br>de celulares<br>com IA</h1>
+            <p>Nome, identidade, canais, estoque e primeiros posts em poucos minutos.</p>
+          </div>
+        </section>
+
+        <section class="step" data-step="1">
+          <div class="step-head compact">
+            <span class="spark">✦</span>
+            <div>
+              <h2>Nome e logo</h2>
+              <p>Dê uma cara profissional para sua loja.</p>
+            </div>
+          </div>
+
+          <div class="logo-preview">
+            <span id="logoLetters">TC</span>
+            <strong id="logoName">TechCell</strong>
+            <small>ACESSÓRIOS E ASSISTÊNCIA</small>
+          </div>
+
+          <label class="field">
+            <span>Nome ou ideia da loja</span>
+            <input id="storeIdea" type="text" placeholder="Ex.: TechCell, PrimeCell...">
+          </label>
+
+          <button id="generateIdentityBtn" class="option-btn" type="button">
+            <span>✧</span>
+            <strong>Gerar identidade</strong>
+            <small>Nome, logo, cores e slogan</small>
+          </button>
+          <p id="identityLimitMessage" class="inline-message" hidden></p>
+        </section>
+
+        <section class="step" data-step="2">
+          <div class="step-head">
+            <span class="icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14"></path><path d="M5 12h14"></path><path d="M5 18h9"></path><circle cx="17" cy="18" r="2"></circle></svg></span>
+            <div>
+              <h2>Diagnóstico inicial</h2>
+              <p>Responda o essencial. O plano nasce daqui.</p>
+            </div>
+          </div>
+
+          <div class="form-list">
+            <label class="row-field">
+              <span class="row-icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.1 7-11a7 7 0 0 0-14 0c0 5.9 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span>
+              <strong>Cidade ou CEP</strong>
+              <input id="cityInput" type="text" placeholder="Digite sua cidade">
+            </label>
+            <label class="row-field">
+              <span class="row-icon green"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="3"></rect><path d="M16 11h4v2h-4a1 1 0 0 1 0-2Z"></path><path d="M8 6V5a2 2 0 0 1 2-2h5"></path></svg></span>
+              <strong>Capital disponível</strong>
+              <select id="capitalInput"><option>Até R$ 1.000</option><option>R$ 1.000 a R$ 3.000</option><option>R$ 3.000 a R$ 8.000</option><option>Acima de R$ 8.000</option></select>
+            </label>
+            <div class="row-field">
+              <span class="row-icon purple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h14l-1-5H6l-1 5Z"></path><path d="M6 10v9h12v-9"></path><path d="M9 19v-5h6v5"></path></svg></span>
+              <strong>Tipo de loja</strong>
+              <div class="segmented" data-choice="operationType"><button class="selected" data-value="Loja física" type="button">Física</button><button data-value="Online" type="button">Online</button></div>
+            </div>
+            <div class="row-field">
+              <span class="row-icon orange"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M22 12h-3M12 22v-3M2 12h3"></path></svg></span>
+              <strong>Foco da operação</strong>
+              <div class="segmented scroll" data-choice="focus"><button class="selected" data-value="Acessórios" type="button">Acessórios</button><button data-value="Celulares" type="button">Celulares</button><button data-value="Assistência" type="button">Assistência</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="step" data-step="3">
+          <div class="step-head">
+            <span class="icon green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M14 3v4h4"></path><path d="M9 12h6"></path><path d="M9 16h6"></path></svg></span>
+            <div>
+              <h2>Base legal da loja</h2>
+              <p>Organize o essencial antes de vender com mais segurança.</p>
+            </div>
+          </div>
+
+          <div class="legal-hero">
+            <span>Primeiro checklist</span>
+            <strong>Você não precisa resolver tudo agora.</strong>
+            <p>Use esta etapa para saber o que separar e validar antes de operar.</p>
+          </div>
+
+          <div class="legal-checklist">
+            <article>
+              <i>1</i>
+              <div><strong>MEI ou CNPJ</strong><p>Verifique se o formato combina com o tamanho e tipo da sua operação.</p></div>
+            </article>
+            <article>
+              <i>2</i>
+              <div><strong>Atividade da loja</strong><p>Confirme a categoria correta para comércio, acessórios ou assistência.</p></div>
+            </article>
+            <article>
+              <i>3</i>
+              <div><strong>Nota fiscal e garantia</strong><p>Defina como vai emitir, trocar produtos e registrar atendimentos.</p></div>
+            </article>
+            <article>
+              <i>4</i>
+              <div><strong>Conta PJ e recebimento</strong><p>Organize Pix, maquininha e separação entre dinheiro pessoal e loja.</p></div>
+            </article>
+          </div>
+
+          <div class="legal-docs">
+            <strong>Tenha por perto</strong>
+            <div><span>CPF</span><span>RG</span><span>Endereço</span><span>Telefone</span></div>
+          </div>
+
+          <div class="info-card legal-note">
+            <strong>Importante</strong>
+            <p>O AutoZap Start só organiza informações e caminhos. Ele não substitui contador, advogado ou órgãos oficiais.</p>
+          </div>
+
+          <a class="official-link" href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor" target="_blank" rel="noreferrer">Abrir portal oficial</a>
+          <button id="formalizationDone" class="outline-btn" type="button">Já entendi esta etapa</button>
+        </section>
+
+        <section class="step" data-step="4">
+          <div class="step-head">
+            <span class="icon purple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4z"></path><path d="M7 7V5h10v2"></path><path d="M8 12h8"></path></svg></span>
+            <div>
+              <h2>Estoque inicial recomendado</h2>
+              <p>Uma sugestão de ponto de partida para o capital informado.</p>
+            </div>
+          </div>
+
+          <div class="stock-connection-card">
+            <strong>Plano conectado ao fornecedor</strong>
+            <p id="stockSupplierContext">Esse plano considera o fornecedor recomendado e o capital disponível.</p>
+          </div>
+
+          <div class="category-card">
+            <strong>Categorias</strong>
+            <div id="categoryGrid" class="pill-grid">
+              <button class="active" data-category="Celulares" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="2"></rect><path d="M11 18h2"></path></svg><span>Celulares</span></button>
+              <button class="active" data-category="Acessórios" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h8l2 4v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg><span>Acessórios</span></button>
+              <button data-category="Películas" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"></rect><path d="M10 6h4"></path><path d="M9 17h6"></path></svg><span>Películas</span></button>
+              <button data-category="Capinhas" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="3"></rect><path d="M10 7h4"></path><path d="M9 15h6"></path></svg><span>Capinhas</span></button>
+              <button data-category="Carregadores" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5"></path><path d="M16 3v5"></path><path d="M7 8h10v4a5 5 0 0 1-10 0z"></path><path d="M12 17v4"></path></svg><span>Carregadores</span></button>
+              <button data-category="Fones" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"></path><rect x="3" y="13" width="4" height="7" rx="2"></rect><rect x="17" y="13" width="4" height="7" rx="2"></rect></svg><span>Fones</span></button>
+              <button data-category="Peças" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-3 3-3-3z"></path></svg><span>Peças</span></button>
+              <button data-category="Serviços" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 4.5 4.8.7-3.5 3.4.8 4.8L12 14.2l-4.3 2.2.8-4.8L5 8.2l4.8-.7z"></path><path d="M4 21h16"></path></svg><span>Serviços</span></button>
+            </div>
+          </div>
+
+          <div class="supplier-card">
+            <div>
+              <strong>Produtos sugeridos do fornecedor</strong>
+              <small id="nearestSupplierLabel">Digite sua cidade para sugerirmos o fornecedor mais próximo.</small>
+            </div>
+            <div id="supplierPreview" class="supplier-list"></div>
+          </div>
+
+          <div class="simulation-card">
+            <strong>Resumo do plano</strong>
+            <span>Investimento recomendado</span>
+            <b id="investmentValue">R$ 2.400</b>
+            <div><small><strong id="itemsValue">44</strong> itens estimados</small><small id="riskValue">Baixo risco</small></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="5">
+          <div class="step-head">
+            <span class="icon purple">▰</span>
+            <div>
+              <h2>Sua loja começou a ganhar forma</h2>
+              <p>Veja a identidade, o fornecedor, o estoque inicial e a prévia dos seus primeiros canais.</p>
+            </div>
+          </div>
+
+          <p class="final-support-copy">Esse é um ponto de partida. Você pode ajustar tudo depois com a equipe AutoZap.</p>
+
+          <div class="final-identity-card">
+            <div class="store-top">
+              <div id="previewLogo" class="mini-logo">TC</div>
+              <div>
+                <strong id="previewName">TechCell</strong>
+                <span id="finalSlogan">Celulares, acessórios e assistência sem complicação.</span>
+                <small id="previewCity">São Paulo - SP</small>
+              </div>
+            </div>
+            <div class="color-row" aria-label="Paleta visual da loja"><i></i><i></i><i></i><i></i></div>
+            <span class="created-badge">Identidade criada</span>
+          </div>
+
+          <div class="final-supplier-card">
+            <div class="final-card-head">
+              <span class="final-icon">✓</span>
+              <div>
+                <strong>Fornecedor recomendado</strong>
+                <small>Opção retornada pela API real quando disponível.</small>
+              </div>
+            </div>
+            <h3 id="finalSupplierName">Distribuidora Tech Prime</h3>
+            <div class="final-detail-grid">
+              <span><small>Cidade</small><b id="finalSupplierCity">Campinas - SP</b></span>
+              <span><small>Distância</small><b id="finalSupplierDistance">8,4 km</b></span>
+              <span><small>Status</small><b id="finalSupplierStatus">Fornecedor verificado</b></span>
+              <span><small>Entrega média</small><b id="finalSupplierDelivery">1 a 2 dias úteis</b></span>
+            </div>
+            <p id="finalSupplierCategories">Capinhas, películas, carregadores e fones</p>
+          </div>
+
+          <div class="final-stock-card">
+            <div class="final-card-head">
+              <span class="final-icon stock">R$</span>
+              <div>
+                <strong>Estoque inicial sugerido</strong>
+                <small>Plano de partida baseado no capital informado.</small>
+              </div>
+            </div>
+            <div class="stock-highlight-row">
+              <article><strong id="finalSelectedItemsTotal">73 itens</strong><span>itens iniciais</span></article>
+              <article><strong id="finalEstimatedInvestment">R$ 2.400</strong><span>investimento estimado</span></article>
+            </div>
+            <div class="final-detail-grid compact">
+              <span><small>Categorias</small><b id="finalStockCategories">Películas, capinhas, carregadores e fones</b></span>
+              <span><small>Margem estimada</small><b id="finalEstimatedMargin">35% a 55%</b></span>
+              <span><small>Ticket médio</small><b id="finalAverageTicket">R$ 45</b></span>
+            </div>
+            <ul id="finalStockItemsList" class="stock-mini-list"></ul>
+          </div>
+
+          <div class="instagram-preview emotional final-instagram-card">
+            <div class="preview-section-title">
+              <strong>Prévia do Instagram da sua loja</strong>
+              <small>Uma ideia de como sua marca pode aparecer com a equipe AutoZap trabalhando.</small>
+            </div>
+            <div class="ig-toolbar"><span></span><span></span><span></span></div>
+            <div class="ig-head"><div id="igAvatar">TC</div><span><strong id="igName">TechCell</strong><small id="igHandle">@techcell.oficial</small></span></div>
+            <p id="igBio">TechCell | acessórios, celulares e assistência. Atendimento rápido pelo WhatsApp.</p>
+            <div class="ig-stats"><span><b>24</b> posts</span><span><b>1.2k</b> seguidores</span><span><b>89</b> seguindo</span></div>
+            <div class="story-row"><span>Novidades</span><span>Capinhas</span><span>Películas</span></div>
+            <button class="ig-message-btn" type="button">Enviar mensagem</button>
+            <div id="postsPreview" class="post-grid"></div>
+          </div>
+
+          <div class="catalog-card final-catalog-card">
+            <div>
+              <strong>Primeira vitrine</strong>
+              <small>Categorias que já dão forma ao catálogo inicial.</small>
+            </div>
+            <div id="catalogPreview" class="catalog-preview"></div>
+          </div>
+
+          <div class="online-quote-card">
+            <strong>Quer uma loja online pronta para vender?</strong>
+            <p>Nossa equipe pode montar uma loja online personalizada com sua identidade, produtos e canais de atendimento.</p>
+            <div class="final-action-row">
+              <a id="onlineStoreQuoteBtn" class="primary" href="#" target="_blank" rel="noreferrer">Peço orçamento</a>
+              <a id="finalAutoZapBtn" class="outline-btn" href="#" target="_blank" rel="noreferrer">Continuar para o AutoZap</a>
+            </div>
+          </div>
+          <button id="adjustPreviewBtn" class="outline-btn" type="button">Continuar ajustando</button>
+        </section>
+
+        <section class="step" data-step="6">
+          <div class="step-head">
+            <span class="icon logo-icon">AZ</span>
+            <div>
+              <h2>Salvar minha loja</h2>
+              <p>Salve sua loja para não perder tudo que você criou.</p>
+            </div>
+          </div>
+
+          <div class="reward-card">
+            <strong>Seu progresso está pronto para ser protegido</strong>
+            <p>Você poderá continuar depois e usar essas informações no AutoZap.</p>
+          </div>
+
+          <div class="save-card">
+            <label class="field"><span>WhatsApp</span><input id="leadWhatsapp" type="tel" placeholder="(00) 00000-0000"></label>
+            <label class="field"><span>Ou e-mail</span><input id="leadEmail" type="email" placeholder="voce@email.com"></label>
+            <p id="saveMessage" class="inline-message" hidden></p>
+          </div>
+
+          <div class="final-summary">
+            <div class="summary-head">
+              <span id="summaryLogo">TC</span>
+              <div><strong id="summaryName">TechCell</strong><small id="summarySlogan">Celulares, acessórios e assistência sem complicação.</small></div>
+            </div>
+            <dl>
+              <div><dt>Cidade</dt><dd id="summaryCity">São Paulo</dd></div>
+              <div><dt>Operação</dt><dd id="summaryOperation">Loja física</dd></div>
+              <div><dt>Categorias</dt><dd id="summaryCategories">Celulares, Acessórios</dd></div>
+            </dl>
+            <div class="summary-copy">
+              <strong>Bio Instagram</strong>
+              <p id="summaryBio">TechCell | acessórios, celulares e assistência. Atendimento rápido pelo WhatsApp.</p>
+            </div>
+            <div class="summary-copy">
+              <strong>WhatsApp</strong>
+              <p id="summaryWhatsapp">Venda de celulares, acessórios e serviços com atendimento simples e garantia clara.</p>
+            </div>
+            <div class="summary-copy">
+              <strong>Próximo passo recomendado</strong>
+              <p>Cadastrar produtos e começar a atender clientes pelo AutoZap.</p>
+            </div>
+          </div>
+
+          <div id="onlineStoreOffer" class="online-offer" hidden>
+            <span class="offer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"></rect><path d="M4 9h16"></path><path d="M8 15h4"></path><path d="M15 15h1"></path></svg></span>
+            <div>
+              <strong>Quer uma loja online pronta?</strong>
+              <p>Você escolheu vender online. Posso te ajudar a criar uma loja/site para receber clientes e pedidos.</p>
+            </div>
+            <a id="onlineStoreHelpBtn" class="outline-btn" href="#" target="_blank" rel="noreferrer">Pedir minha loja/site</a>
+          </div>
+
+          <button id="saveStoreBtn" class="primary secondary-action" type="button">Salvar minha loja grátis</button>
+          <button id="continueAutoZapBtn" class="outline-btn" type="button">Continuar para o AutoZap</button>
+        </section>
+
+        <footer class="bottom-actions">
+          <button id="nextBtn" class="primary" type="button">Começar</button>
+          <span class="safe-note">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M7 10V8a5 5 0 0 1 10 0v2"></path>
+              <rect x="5" y="10" width="14" height="10" rx="3"></rect>
+            </svg>
+            Seus dados estão seguros
+          </span>
+        </footer>
+      </section>
+    </main>
+
+    <div id="modalRoot" class="modal-root" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-live="polite">
+        <div id="modalIcon" class="modal-icon"></div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalText"></p>
+        <pre id="modalJson" hidden></pre>
+        <div id="modalActions" class="modal-actions"></div>
+      </section>
+    </div>
+    <script src="./js/config.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/mobile.js"></script>
+  </body>
+</html>
