@@ -12,9 +12,12 @@ const adminLogoutBtn = document.querySelector("#adminLogoutBtn");
 const adminLockState = document.querySelector("#adminLockState");
 
 const ADMIN_LOGIN_MESSAGE = "Dados privados. Entre com suas credenciais para continuar.";
-const ADMIN_USERNAME = "Rafael";
-const ADMIN_PASSWORD_VALUE = "ra1221";
+const ADMIN_USERNAME_ENCRYPTED = "vgkxUxgZO9uraFRTF1UxmfWbfMTEIM161FvrtXIQlYJj7w==";
+const ADMIN_PASSWORD_ENCRYPTED = "Oj/vqsGklP5+8UIx1hXux+3ABPvrK7uYvj3o4d9IcnGkhQ==";
+const ADMIN_CRYPTO_PASSPHRASE = "autozap-start-admin";
+const ADMIN_CRYPTO_SALT = "autozap-start-admin-salt";
 const ADMIN_SESSION_KEY = "autozap_start_admin_session";
+let adminSecretsPromise = null;
 
 function setText(selector, value) {
   const target = document.querySelector(selector);
@@ -135,7 +138,8 @@ async function handleAdminLogin(event) {
     setAdminMessage("Informe usuário e senha para entrar.", "error");
     return;
   }
-  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD_VALUE) {
+  const secrets = await getAdminSecrets();
+  if (username !== secrets.username || password !== secrets.password) {
     clearAdminSession();
     setDashboardVisible(false);
     setAdminMessage("Login ou senha incorretos.", "error");
@@ -181,6 +185,61 @@ function clearAdminSession() {
   try {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
   } catch (error) {}
+}
+
+async function getAdminSecrets() {
+  if (!adminSecretsPromise) {
+    adminSecretsPromise = Promise.all([
+      decryptSecret(ADMIN_USERNAME_ENCRYPTED),
+      decryptSecret(ADMIN_PASSWORD_ENCRYPTED),
+    ]).then(([username, password]) => ({ username, password }));
+  }
+  return adminSecretsPromise;
+}
+
+async function decryptSecret(encodedValue) {
+  const bytes = base64ToBytes(encodedValue);
+  const iv = bytes.slice(0, 12);
+  const tag = bytes.slice(12, 28);
+  const ciphertext = bytes.slice(28);
+  const key = await deriveCryptoKey();
+  const payload = new Uint8Array(ciphertext.length + tag.length);
+  payload.set(ciphertext, 0);
+  payload.set(tag, ciphertext.length);
+  const plainBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, payload);
+  return new TextDecoder().decode(plainBuffer);
+}
+
+async function deriveCryptoKey() {
+  const encoder = new TextEncoder();
+  const material = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(ADMIN_CRYPTO_PASSPHRASE),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: encoder.encode(ADMIN_CRYPTO_SALT),
+      iterations: 120000,
+      hash: "SHA-256",
+    },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["decrypt"]
+  );
+}
+
+function base64ToBytes(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
 }
 
 if (adminLoginForm) adminLoginForm.addEventListener("submit", handleAdminLogin);
