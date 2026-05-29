@@ -6,6 +6,8 @@ const AutoZapAPI = (() => {
   const USAGE_KEY = "autozap_start_usage";
   const LEADS_KEY = "autozap_start_leads";
   const EXPORTS_KEY = "autozap_start_exports";
+  const ADMIN_AUTH_KEY = "autozap_start_admin_auth";
+  const ADMIN_AUTH_HEADER = "x-admin-token";
   const MOCK_DELAY = 520;
   const DEBUG_KEY = "DEBUG_API";
   const START_DIAGNOSTIC_PATH = routes.identity || "/ai/start-diagnostic";
@@ -19,6 +21,7 @@ const AutoZapAPI = (() => {
     diagnostic: routes.diagnostic || "/start/diagnostic",
     image: routes.image || "/start/image",
     saveSelectedProducts: routes.saveSelectedProducts || "/start/selected-products",
+    adminLogin: routes.adminLogin || "/start/admin/login",
     identity: routes.identity || routes.diagnostic || "/start/diagnostic",
     logo: routes.logo || routes.image || "/start/image",
     bio: routes.bio || routes.diagnostic || "/start/diagnostic",
@@ -27,6 +30,7 @@ const AutoZapAPI = (() => {
     scripts: routes.scripts || routes.diagnostic || "/start/diagnostic",
     preview: routes.preview || routes.diagnostic || "/start/diagnostic",
     exportAutoZap: routes.exportAutoZap || routes.lead || "/start/lead",
+    adminLogin: routes.adminLogin || "/start/admin/login",
     adminMetrics: routes.adminMetrics || "/start/admin/metrics",
     recentLeads: routes.recentLeads || "/start/admin/leads",
     recentSessions: routes.recentSessions || "/start/admin/sessions",
@@ -35,6 +39,34 @@ const AutoZapAPI = (() => {
   function shouldUseMock() {
     const useMock = String(localStorage.getItem("USE_MOCK") || "").toLowerCase();
     return config.mockMode === true || useMock === "true" || useMock === "1";
+  }
+
+  function readAdminAuthToken() {
+    try {
+      return sessionStorage.getItem(ADMIN_AUTH_KEY) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function writeAdminAuthToken(token) {
+    try {
+      if (token) sessionStorage.setItem(ADMIN_AUTH_KEY, token);
+      else sessionStorage.removeItem(ADMIN_AUTH_KEY);
+    } catch (error) {}
+  }
+
+  function clearAdminAuthToken() {
+    writeAdminAuthToken("");
+  }
+
+  function hasAdminAuthToken() {
+    return Boolean(readAdminAuthToken());
+  }
+
+  function adminHeaders(headers = {}) {
+    const token = readAdminAuthToken();
+    return token ? { ...headers, [ADMIN_AUTH_HEADER]: token } : { ...headers };
   }
 
   function debugApi(details) {
@@ -904,6 +936,63 @@ const AutoZapAPI = (() => {
     return String(raw.code || raw.errorCode || error || "");
   }
 
+  async function adminRequest(endpointKey, options = {}) {
+    if (shouldUseMock()) return null;
+    if (endpointKey !== "adminLogin" && !hasAdminAuthToken()) {
+      return {
+        ok: false,
+        status: 401,
+        endpoint: endpoints[endpointKey] || endpointKey,
+        message: "Faça login para acessar o painel administrativo.",
+        error: "admin_auth_required",
+        data: null,
+        raw: { ok: false, error: "admin_auth_required" },
+        context: "admin_auth_required",
+      };
+    }
+    return apiRequest(endpoints[endpointKey], {
+      ...options,
+      headers: adminHeaders(options.headers || {}),
+      caller: options.caller || endpointKey,
+      context: options.context || "admin_auth_required",
+    });
+  }
+
+  async function adminLogin(credentials = {}) {
+    if (shouldUseMock()) {
+      const token = `mock.${createId("admin")}`;
+      writeAdminAuthToken(token);
+      return {
+        ok: true,
+        status: 200,
+        endpoint: endpoints.adminLogin,
+        message: "",
+        data: {
+          token,
+          user: { username: safeText(credentials.username) || "admin" },
+          expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+        },
+      };
+    }
+    const response = await apiRequest(endpoints.adminLogin, {
+      method: "POST",
+      body: {
+        username: safeText(credentials.username),
+        password: safeText(credentials.password),
+      },
+      caller: "adminLogin",
+      context: "admin_auth_failed",
+    });
+    const token = response && response.ok ? extractAdminToken(response.data || response.raw || response.body) : "";
+    if (token) writeAdminAuthToken(token);
+    return response;
+  }
+
+  function extractAdminToken(payload) {
+    if (!payload || typeof payload !== "object") return "";
+    return payload.token || payload.adminToken || payload.sessionToken || payload.data?.token || payload.data?.adminToken || "";
+  }
+
   async function generateStartImage(payload = {}) {
     if (shouldUseMock()) {
       const guard = usageGuard("image");
@@ -1106,7 +1195,7 @@ const AutoZapAPI = (() => {
   }
 
   async function getAdminMetrics() {
-    const realResponse = await get("adminMetrics");
+    const realResponse = await adminRequest("adminMetrics");
     if (realResponse) return realResponse;
     const leads = readJSON(LEADS_KEY, []);
     const usage = getUsage();
@@ -1124,7 +1213,7 @@ const AutoZapAPI = (() => {
   }
 
   async function getRecentLeads() {
-    const realResponse = await get("recentLeads");
+    const realResponse = await adminRequest("recentLeads");
     if (realResponse) return realResponse;
     const leads = readJSON(LEADS_KEY, []);
     const fallback = [
@@ -1135,7 +1224,7 @@ const AutoZapAPI = (() => {
   }
 
   async function getRecentSessions() {
-    const realResponse = await get("recentSessions");
+    const realResponse = await adminRequest("recentSessions");
     if (realResponse) return realResponse;
     return mockResponse([
       { id: "azs_18f2", city: "São Paulo", store: "TechCell", status: "Prévia criada", risk: "Baixo" },
@@ -1307,6 +1396,11 @@ const AutoZapAPI = (() => {
     getAdminMetrics,
     getRecentLeads,
     getRecentSessions,
+    adminLogin,
+    hasAdminAuthToken,
+    getAdminAuthToken: readAdminAuthToken,
+    setAdminAuthToken: writeAdminAuthToken,
+    clearAdminAuthToken,
   };
 })();
 

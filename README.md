@@ -104,7 +104,9 @@ O desktop nao depende de `server/server.js` em producao e nao ativa mock automat
 
 ## Admin
 
-`admin.html` simula um painel operacional com:
+`admin.html` abre um painel restrito com login por usuário e senha e token temporário em `sessionStorage`. As rotas admin exigem autenticação no backend.
+
+Depois do login, o painel mostra:
 
 - sessões iniciadas;
 - lojas criadas;
@@ -117,7 +119,7 @@ O desktop nao depende de `server/server.js` em producao e nao ativa mock automat
 - leads recentes;
 - sessões recentes.
 
-As rotas admin, incluindo `/start/admin/metrics`, nao fazem parte do healthcheck de publicacao do Start estatico.
+As rotas admin, incluindo `/start/admin/metrics`, nao fazem parte do healthcheck de publicacao do Start estatico, mas exigem autenticação quando a API está em produção.
 
 ## Config Global
 
@@ -157,8 +159,10 @@ window.AUTOZAP_START_CONFIG = {
 - `getAdminMetrics()`
 - `getRecentLeads()`
 - `getRecentSessions()`
+- `adminLogin(credentials)`
 
 Com `mockMode: false`, a camada chama `https://aip.autozap.log.br` nas rotas `/start/*`. `localhost` nao ativa mock automaticamente.
+As chamadas admin usam `x-admin-token` guardado apenas em `sessionStorage`.
 
 Rotas publicas principais:
 
