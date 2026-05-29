@@ -12,6 +12,9 @@ const adminLogoutBtn = document.querySelector("#adminLogoutBtn");
 const adminLockState = document.querySelector("#adminLockState");
 
 const ADMIN_LOGIN_MESSAGE = "Dados privados. Entre com suas credenciais para continuar.";
+const ADMIN_USERNAME = "Rafael";
+const ADMIN_PASSWORD_VALUE = "ra1221";
+const ADMIN_SESSION_KEY = "autozap_start_admin_session";
 
 function setText(selector, value) {
   const target = document.querySelector(selector);
@@ -99,13 +102,6 @@ async function loadAdminData() {
     AutoZapAPI.getRecentSessions(),
   ]);
 
-  if (isUnauthorized(metricsResponse) || isUnauthorized(leadsResponse) || isUnauthorized(sessionsResponse)) {
-    AutoZapAPI.clearAdminAuthToken();
-    setDashboardVisible(false);
-    setAdminMessage(ADMIN_LOGIN_MESSAGE, "error");
-    return false;
-  }
-
   const metrics = metricsResponse.data || metricsResponse || getMetricsFallback();
   const leads = leadsResponse.data || leadsResponse || [];
   const sessions = sessionsResponse.data || sessionsResponse || [];
@@ -131,10 +127,6 @@ async function loadAdminData() {
   return true;
 }
 
-function isUnauthorized(response) {
-  return response && response.status === 401;
-}
-
 async function handleAdminLogin(event) {
   event.preventDefault();
   const username = (adminUsername && adminUsername.value || "").trim();
@@ -143,20 +135,19 @@ async function handleAdminLogin(event) {
     setAdminMessage("Informe usuário e senha para entrar.", "error");
     return;
   }
-  setAdminMessage("Validando credenciais...", "info");
-  const response = await AutoZapAPI.adminLogin({ username, password });
-  if (!response || !response.ok) {
-    AutoZapAPI.clearAdminAuthToken();
+  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD_VALUE) {
+    clearAdminSession();
     setDashboardVisible(false);
-    setAdminMessage("Login inválido ou sessão expirada.", "error");
+    setAdminMessage("Login ou senha incorretos.", "error");
     return;
   }
+  setAdminSession({ username, authenticatedAt: new Date().toISOString() });
   if (adminPassword) adminPassword.value = "";
   await loadAdminData();
 }
 
 function handleLogout() {
-  AutoZapAPI.clearAdminAuthToken();
+  clearAdminSession();
   if (adminPassword) adminPassword.value = "";
   setDashboardVisible(false);
   setAdminMessage(ADMIN_LOGIN_MESSAGE, "error");
@@ -165,11 +156,31 @@ function handleLogout() {
 
 async function bootAdmin() {
   setDashboardVisible(false);
-  if (AutoZapAPI.hasAdminAuthToken && AutoZapAPI.hasAdminAuthToken()) {
+  if (hasAdminSession()) {
     const loaded = await loadAdminData();
     if (loaded) return;
   }
   setAdminMessage(ADMIN_LOGIN_MESSAGE, "error");
+}
+
+function hasAdminSession() {
+  try {
+    return Boolean(sessionStorage.getItem(ADMIN_SESSION_KEY));
+  } catch (error) {
+    return false;
+  }
+}
+
+function setAdminSession(value) {
+  try {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(value));
+  } catch (error) {}
+}
+
+function clearAdminSession() {
+  try {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  } catch (error) {}
 }
 
 if (adminLoginForm) adminLoginForm.addEventListener("submit", handleAdminLogin);

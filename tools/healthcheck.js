@@ -119,7 +119,6 @@ function checkConfig() {
   if (!config.includes(expectedMockMode)) fail("mockMode should be false by default");
   if (!config.includes(`var AUTOZAP_API_BASE_URL = "${expectedApiBaseUrl}"`)) fail(`API base variable should be ${expectedApiBaseUrl}`);
   if (!config.includes("apiBaseUrl: AUTOZAP_API_BASE_URL")) fail("apiBaseUrl should use AUTOZAP_API_BASE_URL");
-  if (!config.includes("adminLogin: `${AUTOZAP_API_BASE_URL}/start/admin/login`")) fail("admin login route should be configured");
   if (!api.includes(`const DEFAULT_API_BASE_URL = "${expectedApiBaseUrl}"`)) fail(`api fallback should be ${expectedApiBaseUrl}`);
   if (config.includes("https://api.autozap.log.br") || api.includes("https://api.autozap.log.br")) fail("frontend code still references api.autozap.log.br");
   pass("production config aligned");

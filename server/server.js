@@ -2,7 +2,6 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const crypto = require("crypto");
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -10,10 +9,6 @@ const memoryUsage = new Map();
 const leads = [];
 const sessions = [];
 const exportsLog = [];
-const ADMIN_USERNAME = String(process.env.ADMIN_USERNAME || "admin").trim();
-const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || "change-me").trim();
-const ADMIN_AUTH_SECRET = String(process.env.ADMIN_AUTH_SECRET || "autozap-start-admin-secret").trim();
-const ADMIN_TOKEN_TTL_MS = Number(process.env.ADMIN_TOKEN_TTL_MS || 12 * 60 * 60 * 1000);
 
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN || true }));
 app.use(express.json({ limit: "256kb" }));
@@ -26,23 +21,6 @@ app.get("/api/start/health", (req, res) => ok(res, {
   mockMode: process.env.MOCK_MODE !== "false",
   uptime: process.uptime(),
 }));
-
-app.post("/api/start/admin/login", (req, res) => {
-  const username = String(req.body.username || "").trim();
-  const password = String(req.body.password || "").trim();
-  if (!username || !password) {
-    return fail(res, 400, "ADMIN_AUTH_REQUIRED", "Informe usuário e senha.");
-  }
-  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
-    return fail(res, 401, "ADMIN_AUTH_INVALID", "Usuário ou senha inválidos.");
-  }
-  const token = createAdminToken({ username });
-  ok(res, {
-    token,
-    user: { username },
-    expiresAt: new Date(Date.now() + ADMIN_TOKEN_TTL_MS).toISOString(),
-  });
-});
 
 app.post("/api/start/session", (req, res) => {
   const session = {
@@ -146,9 +124,9 @@ app.post("/api/start/export-autozap", (req, res) => {
   ok(res, { exported: true, payload });
 });
 
-app.get("/api/start/admin/metrics", requireAdminAuth, (req, res) => ok(res, adminMetrics()));
-app.get("/api/start/admin/leads", requireAdminAuth, (req, res) => ok(res, leads.slice(0, 20)));
-app.get("/api/start/admin/sessions", requireAdminAuth, (req, res) => ok(res, sessions.slice(0, 20)));
+app.get("/api/start/admin/metrics", (req, res) => ok(res, adminMetrics()));
+app.get("/api/start/admin/leads", (req, res) => ok(res, leads.slice(0, 20)));
+app.get("/api/start/admin/sessions", (req, res) => ok(res, sessions.slice(0, 20)));
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -227,45 +205,6 @@ function createId(prefix) {
 
 function titleCase(value) {
   return value.split(/\s+/).filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
-}
-
-function createAdminToken(payload) {
-  const data = {
-    username: payload.username,
-    role: "admin",
-    issuedAt: Date.now(),
-    expiresAt: Date.now() + ADMIN_TOKEN_TTL_MS,
-  };
-  const encoded = Buffer.from(JSON.stringify(data)).toString("base64url");
-  const signature = crypto.createHmac("sha256", ADMIN_AUTH_SECRET).update(encoded).digest("hex");
-  return `${encoded}.${signature}`;
-}
-
-function verifyAdminToken(token) {
-  if (!token || typeof token !== "string") return false;
-  const [encoded, signature] = token.split(".");
-  if (!encoded || !signature) return false;
-  const expected = crypto.createHmac("sha256", ADMIN_AUTH_SECRET).update(encoded).digest("hex");
-  const actualBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  if (actualBuffer.length !== expectedBuffer.length) return false;
-  if (!crypto.timingSafeEqual(actualBuffer, expectedBuffer)) return false;
-  try {
-    const data = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
-    return Boolean(data && data.role === "admin" && Number(data.expiresAt) > Date.now());
-  } catch (error) {
-    return false;
-  }
-}
-
-function requireAdminAuth(req, res, next) {
-  const header = req.get("x-admin-token") || "";
-  const bearer = req.get("authorization") || "";
-  const token = header || bearer.replace(/^Bearer\s+/i, "");
-  if (!verifyAdminToken(token)) {
-    return fail(res, 401, "ADMIN_AUTH_REQUIRED", "Acesso restrito. Faça login novamente.");
-  }
-  next();
 }
 
 function initials(value) {

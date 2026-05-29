@@ -35,23 +35,12 @@ O servidor tem mocks de:
 - `detectRiskMock`
 - `usageGuardMock`
 - `verifyTurnstileMock`
-- `requireAdminAuth`
-- `createAdminToken`
 
 O Turnstile ainda não é exibido no frontend. No futuro, envie o token no payload e valide em `verifyTurnstileMock`.
 
-## Acesso Admin
+## Admin
 
-As rotas `/api/start/admin/metrics`, `/api/start/admin/leads` e `/api/start/admin/sessions` exigem login.
-
-Configure no `.env`:
-
-- `ADMIN_USERNAME`
-- `ADMIN_PASSWORD`
-- `ADMIN_AUTH_SECRET`
-- `ADMIN_TOKEN_TTL_MS`
-
-O frontend `admin.html` envia usuário e senha para `POST /api/start/admin/login` e guarda apenas o token temporário na `sessionStorage`.
+As rotas `/api/start/admin/metrics`, `/api/start/admin/leads` e `/api/start/admin/sessions` ficam disponíveis para o painel interno, que bloqueia o acesso no frontend com login local.
 
 ## IA Real
 

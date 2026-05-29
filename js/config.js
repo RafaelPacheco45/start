@@ -34,7 +34,6 @@ window.AUTOZAP_START_CONFIG = {
     preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
     saveSelectedProducts: `${AUTOZAP_API_BASE_URL}/start/selected-products`,
     exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    adminLogin: `${AUTOZAP_API_BASE_URL}/start/admin/login`,
     adminMetrics: `${AUTOZAP_API_BASE_URL}/start/admin/metrics`,
     recentLeads: `${AUTOZAP_API_BASE_URL}/start/admin/leads`,
     recentSessions: `${AUTOZAP_API_BASE_URL}/start/admin/sessions`,
@@ -50,7 +49,6 @@ window.AUTOZAP_START_CONFIG = {
     preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
     leads: `${AUTOZAP_API_BASE_URL}/start/lead`,
     exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    adminLogin: `${AUTOZAP_API_BASE_URL}/start/admin/login`,
   },
 };
 
