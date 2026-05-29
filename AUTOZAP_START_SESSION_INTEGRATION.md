@@ -68,3 +68,4 @@ Com `localStorage.DEBUG_API = "1"`, o console mostra endpoint, status, `hasStart
 - O Start usa `/start/image` no fluxo mobile.
 - Modelo backend: `gpt-image-1`.
 - Rate limit backend: 3 imagens por sessao/IP em 10 minutos.
+

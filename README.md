@@ -182,13 +182,15 @@ O fluxo mobile de identidade chama `POST /start/image` depois do diagnostico tex
 - A resposta aceita `imageBase64` e `mimeType`, incluindo o formato `{ ok: true, imageBase64, mimeType }`.
 - A UI converte a resposta em `data:image/png;base64,...` e exibe na previa/logo.
 - Se a imagem falhar, o fluxo continua com iniciais da loja e mostra: `Imagem automática indisponível agora. Usamos uma prévia provisória.`
+- Se a imagem passar do timeout, o fluxo continua com iniciais da loja e mostra: `A imagem demorou mais que o esperado. Usamos uma prévia provisória, mas você pode tentar novamente.`
 - Se o backend retornar `429 start_image_rate_limited`, a UI mostra: `Limite de geração de imagem atingido. Tente novamente em alguns minutos.`
 - O backend limita a 3 imagens por sessao/IP em 10 minutos.
-- Com `DEBUG_API=1`, o console mostra status, endpoint, sessao e modelo, mas nao imprime o `imageBase64` inteiro.
+- Timeouts: chamadas comuns usam `requestTimeoutMs` de 15000 ms, diagnostico usa `diagnosticRequestTimeoutMs` de 30000 ms e imagem usa `imageRequestTimeoutMs` de 60000 ms, porque a geracao real de imagem pode demorar mais que as chamadas comuns.
+- Com `DEBUG_API=1`, o console mostra endpoint, timeout usado, status, aborto por timeout, recebimento de imagem, sessao e modelo, mas nao imprime o `imageBase64` inteiro.
 
 ## Backend Opcional
 
-Backend mockado em Node.js + Express:
+Backend de desenvolvimento local em Node.js + Express:
 
 ```bash
 cd server
@@ -224,7 +226,7 @@ Preparado no backend:
 - `detectRiskMock`
 - `usageGuardMock`
 
-Regra mockada:
+Regra de desenvolvimento local:
 
 - visitante anônimo: 1 geração visual completa;
 - texto: limite maior;
@@ -303,7 +305,8 @@ Validar:
 - `GET /start/suppliers/:id/products`;
 - selecao de produtos e total estimado;
 - `POST /start/lead`;
-- fallback com iniciais se imagem falhar.
+- fallback com iniciais se imagem falhar;
+- timeout de imagem maior que o padrao para acomodar a geracao real.
 
 ## Próximas Integrações
 
@@ -313,3 +316,4 @@ Validar:
 - analytics reais;
 - integração com AutoZap principal;
 - autenticação opcional depois do valor percebido.
+

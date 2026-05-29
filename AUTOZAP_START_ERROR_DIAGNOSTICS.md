@@ -152,3 +152,4 @@ POST https://aip.autozap.log.br/start/lead
 6. Se responder `500+`, a UI mostra `Erro interno no servidor.`
 7. Se falhar por rede/CORS, a UI mostra `Não foi possível acessar a API. Verifique conexão/CORS.`
 8. Em qualquer falha, os dados preenchidos permanecem no formulario para tentar novamente.
+

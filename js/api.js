@@ -53,6 +53,8 @@ const AutoZapAPI = (() => {
       imageReceived: Boolean(details.imageReceived),
       imageBase64Length: details.imageBase64Length || 0,
       mimeType: details.mimeType || "",
+      timeoutMs: details.timeoutMs,
+      aborted: Boolean(details.aborted),
       body: sanitizeDebugBody(details.body),
       caller: details.caller || "",
       context: details.context || "",
@@ -101,6 +103,11 @@ const AutoZapAPI = (() => {
       mimeType: source && source.mimeType || "",
       model: source && source.model || "",
     };
+  }
+
+  function requestTimeoutMs(value, fallback) {
+    const timeout = Number(value || fallback);
+    return Number.isFinite(timeout) && timeout > 0 ? timeout : fallback;
   }
 
   function debugAiFormat(label, response, text) {
@@ -273,9 +280,11 @@ const AutoZapAPI = (() => {
     const url = buildUrl(path);
     const context = options.context || "";
     const caller = options.caller || "";
+    const configuredTimeout = options.timeoutMs !== undefined ? options.timeoutMs : config.requestTimeoutMs;
+    const timeoutMs = requestTimeoutMs(configuredTimeout, 15000);
     async function sendOnce(isRetry = false) {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs || config.requestTimeoutMs || 12000);
+      const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
       const headers = { ...(options.headers || {}) };
       let requestBody = options.body;
       let token = "";
@@ -296,6 +305,8 @@ const AutoZapAPI = (() => {
             startSessionRequested: true,
             hasStartSession: false,
             headersHasStartSession: false,
+            timeoutMs,
+            aborted: false,
           });
           return {
             ok: false,
@@ -310,6 +321,8 @@ const AutoZapAPI = (() => {
             context,
             caller,
             mockActive: shouldUseMock(),
+            aborted: false,
+            timeoutMs,
           };
         }
       }
@@ -331,6 +344,9 @@ const AutoZapAPI = (() => {
         headersHasStartSession: Boolean(headers["x-start-session"]),
         hasMessage: path === START_DIAGNOSTIC_PATH ? Boolean(diagnosticTextFromPayload(requestBody)) : undefined,
         messageLength: path === START_DIAGNOSTIC_PATH ? diagnosticTextFromPayload(requestBody).length : undefined,
+        timeoutMs,
+        aborted: false,
+        imageReceived: false,
       });
       try {
         const response = await fetch(url, fetchOptions);
@@ -353,6 +369,8 @@ const AutoZapAPI = (() => {
           imageReceived: imageDetails.imageReceived,
           imageBase64Length: imageDetails.imageBase64Length,
           mimeType: imageDetails.mimeType,
+          timeoutMs,
+          aborted: false,
         });
         const body = payload && typeof payload === "object" ? payload : { data: payload };
         const message = body.error || body.message || (response.ok ? "" : statusMessage(response.status));
@@ -369,10 +387,12 @@ const AutoZapAPI = (() => {
           context,
           caller,
           mockActive: shouldUseMock(),
+          aborted: false,
+          timeoutMs,
         };
       } catch (error) {
         const isTimeout = error && error.name === "AbortError";
-        const message = isTimeout ? "Tempo de resposta da API excedido." : "Não foi possível acessar a API. Verifique conexão/CORS.";
+        const message = isTimeout ? "Tempo de resposta excedido." : "Não foi possível conectar agora. Tente novamente em alguns instantes.";
         const body = { originalMessage: error && error.message ? error.message : "Falha de rede" };
         debugApi({
           endpoint: path,
@@ -385,6 +405,9 @@ const AutoZapAPI = (() => {
           startSessionRequested: Boolean(options.startSession),
           hasStartSession: Boolean(token),
           headersHasStartSession: Boolean(headers["x-start-session"]),
+          timeoutMs,
+          aborted: Boolean(isTimeout),
+          imageReceived: false,
         });
         return {
           ok: false,
@@ -399,6 +422,8 @@ const AutoZapAPI = (() => {
           context,
           caller,
           mockActive: shouldUseMock(),
+          aborted: Boolean(isTimeout),
+          timeoutMs,
         };
       } finally {
         window.clearTimeout(timeout);
@@ -620,12 +645,26 @@ const AutoZapAPI = (() => {
     if (shouldUseMock()) return null;
     const diagnosticPayload = ensureDiagnosticPayload(payload);
     debugDiagnosticPayload(diagnosticPayload);
-    return apiRequest(START_DIAGNOSTIC_PATH, { method: "POST", body: diagnosticPayload, caller: "apiStartDiagnostic", context: "start_diagnostic", startSession: true });
+    return apiRequest(START_DIAGNOSTIC_PATH, {
+      method: "POST",
+      body: diagnosticPayload,
+      caller: "apiStartDiagnostic",
+      context: "start_diagnostic",
+      startSession: true,
+      timeoutMs: requestTimeoutMs(config.diagnosticRequestTimeoutMs, 30000),
+    });
   }
 
   async function apiStartImage(payload = {}) {
     if (shouldUseMock()) return null;
-    return apiRequest(endpoints.image, { method: "POST", body: payload, caller: "apiStartImage", context: "image_failed", startSession: true });
+    return apiRequest(endpoints.image, {
+      method: "POST",
+      body: payload,
+      caller: "apiStartImage",
+      context: "image_failed",
+      startSession: true,
+      timeoutMs: requestTimeoutMs(config.imageRequestTimeoutMs, 60000),
+    });
   }
 
   async function createAnonymousSession() {
@@ -823,7 +862,7 @@ const AutoZapAPI = (() => {
         allowed: true,
         logo: initials(payload.storeName || "TechCell"),
         style: "lettermark-premium",
-        message: "Logo mockada criada localmente.",
+        message: "Prévia visual criada localmente.",
         usage,
       });
     } catch (error) {
@@ -888,6 +927,13 @@ const AutoZapAPI = (() => {
     };
     const response = await apiStartImage(requestPayload);
     if (!response || !response.ok) {
+      if (response && response.aborted) {
+        return {
+          ...response,
+          error: "A imagem demorou mais que o esperado. Usamos uma prévia provisória, mas você pode tentar novamente.",
+          message: "A imagem demorou mais que o esperado. Usamos uma prévia provisória, mas você pode tentar novamente.",
+        };
+      }
       if (response && response.status === 429 && responseCode(response) === "start_image_rate_limited") {
         return { ...response, error: "Limite de geração de imagem atingido. Tente novamente em alguns minutos.", message: "Limite de geração de imagem atingido. Tente novamente em alguns minutos." };
       }
@@ -1004,7 +1050,7 @@ const AutoZapAPI = (() => {
       const realResponse = await apiSaveStartLead(normalized);
       if (realResponse !== null) return realResponse;
       if (!shouldUseMock()) {
-        return { ok: false, status: 0, error: "Não foi possível salvar o lead agora. Tente novamente em instantes.", data: null };
+        return { ok: false, status: 0, error: "Não foi possível salvar sua loja agora. Confira sua conexão e tente novamente.", message: "Não foi possível salvar sua loja agora. Confira sua conexão e tente novamente.", data: null };
       }
       const leads = readJSON(LEADS_KEY, []);
       const lead = { ...normalized, id: createId("lead") };
@@ -1013,7 +1059,7 @@ const AutoZapAPI = (() => {
       console.log("AutoZap Start lead salvo", lead);
       return mockResponse({ saved: true, lead }, 260);
     } catch (error) {
-      return failureObject(error, "Não foi possível salvar sua solicitação agora.", "lead_save_failed");
+      return failureObject(error, "Não foi possível salvar sua loja agora. Confira sua conexão e tente novamente.", "lead_save_failed");
     }
   }
 
@@ -1082,8 +1128,8 @@ const AutoZapAPI = (() => {
     if (realResponse) return realResponse;
     const leads = readJSON(LEADS_KEY, []);
     const fallback = [
-      { id: "lead_demo_1", contact: "(11) 99999-1122", contactType: "whatsapp", storeName: "TechCell", city: "São Paulo", progress: 100, createdAt: new Date().toISOString() },
-      { id: "lead_demo_2", contact: "contato@primecell.com", contactType: "email", storeName: "PrimeCell", city: "Curitiba", progress: 88, createdAt: new Date().toISOString() },
+      { id: "lead_dev_1", contact: "(11) 99999-1122", contactType: "whatsapp", storeName: "TechCell", city: "São Paulo", progress: 100, createdAt: new Date().toISOString() },
+      { id: "lead_dev_2", contact: "contato@primecell.com", contactType: "email", storeName: "PrimeCell", city: "Curitiba", progress: 88, createdAt: new Date().toISOString() },
     ];
     return mockResponse(leads.length ? leads : fallback, 120);
   }
@@ -1119,9 +1165,13 @@ const AutoZapAPI = (() => {
       capital: payload.capital || "",
       businessType: payload.businessType || payload.operationType || payload.storeType || "",
       operationType: payload.operationType || payload.storeType || "",
+      categories: Array.isArray(payload.categories) ? payload.categories : [],
+      identity: payload.identity || {},
+      recommendedSupplier: payload.recommendedSupplier || null,
       selectedSupplierId: payload.selectedSupplierId || (payload.recommendedSupplier && payload.recommendedSupplier.id) || "",
       selectedProducts,
       estimatedInitialStockValue,
+      finalSummary: payload.finalSummary || payload.summary || {},
       diagnostic: payload.diagnostic || {
         capital: payload.capital || "",
         focus: payload.focus || "",
@@ -1259,3 +1309,4 @@ const AutoZapAPI = (() => {
     getRecentSessions,
   };
 })();
+

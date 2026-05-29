@@ -67,26 +67,34 @@ Nao testar `/start/admin/metrics`; essa rota era de healthcheck/teste antigo e n
    - Network deve mostrar `POST https://aip.autozap.log.br/start/image`.
    - A resposta de imagem pode conter `imageBase64`, `mimeType` e `model`.
    - O console de debug nao deve imprimir o `imageBase64` inteiro.
+   - Com `DEBUG_API=1`, o console deve mostrar endpoint, `timeoutMs`, status, `aborted` e `imageReceived`.
+   - O timeout esperado para imagem e `60000` ms.
    - A previa/logo deve exibir a imagem retornada.
 
 7. Confirmar fallback de imagem
    - Se `/start/image` retornar `501`, `500`, falha de rede/CORS ou payload sem `imageBase64`, a UI deve manter o fluxo e mostrar as iniciais da loja.
    - A mensagem discreta deve ser: `Imagem automática indisponível agora. Usamos uma prévia provisória.`
+   - Se a chamada de imagem abortar por timeout, a mensagem discreta deve ser: `A imagem demorou mais que o esperado. Usamos uma prévia provisória, mas você pode tentar novamente.`
    - Se retornar `429 start_image_rate_limited`, mostrar: `Limite de geração de imagem atingido. Tente novamente em alguns minutos.`
    - Nao deve haver novas tentativas em loop.
 
-8. API retorna fornecedores ativos
+8. Confirmar timeouts configurados
+   - Chamadas comuns usam `requestTimeoutMs: 15000`.
+   - Diagnostico usa `diagnosticRequestTimeoutMs: 30000`.
+   - Imagem usa `imageRequestTimeoutMs: 60000`, pois a geracao real pode demorar mais que fornecedores, sessao e lead.
+
+9. API retorna fornecedores ativos
    - Fornecedores reais aparecem.
    - Nenhum fornecedor de `localSuppliers` aparece.
 
-9. API retorna lista vazia
+10. API retorna lista vazia
    - Aparece estado vazio real: "Nenhum fornecedor disponivel no momento."
    - Nao aparece fornecedor fake.
 
-10. Fornecedor ativo selecionado
+11. Fornecedor ativo selecionado
    - O fornecedor usado no fluxo deve ter `id` real retornado pela API.
 
-11. Confirmar chamada real de produtos
+12. Confirmar chamada real de produtos
    - Network deve mostrar `GET https://aip.autozap.log.br/start/suppliers/:id/products`.
 
 12. API retorna produtos vazios
@@ -160,10 +168,10 @@ Nao testar `/start/admin/metrics`; essa rota era de healthcheck/teste antigo e n
 17. Busca no projeto
    - Rodar:
      ```powershell
-     rg -n "api\.autozap\.log\.br|OPENAI_API_KEY|sk-|mock: true|lead_saved_mock" .
+     rg -n "OPENAI_API_KEY|sk-|mock: true|lead_saved_mock" .
      ```
    - Resultado esperado:
-     - `api.autozap.log.br`, `OPENAI_API_KEY`, `sk-`, `mock: true` e `lead_saved_mock` nao devem existir no frontend de producao.
+     - `OPENAI_API_KEY`, `sk-`, `mock: true` e `lead_saved_mock` nao devem existir no frontend de producao.
      - `https://aip.autozap.log.br` deve existir em `js/config.js` e documentacao.
 
 ## GitHub Pages
@@ -174,3 +182,4 @@ Nao testar `/start/admin/metrics`; essa rota era de healthcheck/teste antigo e n
 - Publicar preferencialmente em `start.autozap.log.br`.
 - Manter `apiBaseUrl` como `https://aip.autozap.log.br`.
 - Manter `mockMode: false`.
+

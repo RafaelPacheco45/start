@@ -95,7 +95,7 @@ async function renderAdmin() {
   if (adminMeta) {
     const config = AutoZapAPI.config || window.AUTOZAP_START_CONFIG || {};
     const useMock = String(localStorage.getItem("USE_MOCK") || "").toLowerCase();
-    const mode = config.mockMode === true || useMock === "1" || useMock === "true" ? "mock local" : "API real";
+    const mode = config.mockMode === true || useMock === "1" || useMock === "true" ? "desenvolvimento local" : "API real";
     adminMeta.textContent = `v${config.version || "0.2.0"} · ${mode} · ${leads.length} leads carregados`;
   }
 }

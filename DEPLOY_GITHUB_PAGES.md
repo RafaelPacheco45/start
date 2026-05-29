@@ -21,3 +21,4 @@
 - Os caminhos usam `basePath: "./"` para funcionar em deploy estatico.
 - Nao ha chave OpenAI ou segredo no frontend.
 - O fallback mock pode ser ativado manualmente em desenvolvimento com `localStorage.setItem("USE_MOCK", "1")`.
+

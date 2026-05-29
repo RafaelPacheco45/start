@@ -28,3 +28,4 @@ Data: 2026-05-24
 - Identidade, bio, posts, scripts, diagnostico visual e imagem continuam com mock local se as rotas reais retornarem `404/501` ou se `USE_MOCK=1`.
 - `server/server.js` permanece como mock/dev local e nao e necessario para GitHub Pages.
 - Fornecedores/produtos fake ficam apenas como fallback de desenvolvimento. Em producao, se a API nao retornar fornecedores ativos, a UI mostra `Nenhum fornecedor disponível no momento.`
+

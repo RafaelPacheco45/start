@@ -261,7 +261,7 @@ async function generateDesktopImage() {
   }
   desktopState.imageNotice = imageResponse && imageResponse.status === 429
     ? (imageResponse.message || "Limite de geração de imagem atingido. Tente novamente em alguns minutos.")
-    : "Imagem automática indisponível agora. Usamos uma prévia provisória.";
+    : (imageResponse && imageResponse.message) || "Imagem automática indisponível agora. Usamos uma prévia provisória.";
   return false;
 }
 
@@ -272,12 +272,12 @@ async function loadDesktopSuppliers() {
   if (response && response.ok) {
     desktopState.suppliers = response.suppliers || response.data || [];
     if (!desktopState.selectedSupplierId && desktopState.suppliers[0]) desktopState.selectedSupplierId = desktopState.suppliers[0].id;
-    showDesktopMessage(desktopState.suppliers.length ? "Fornecedores carregados." : "Nenhum fornecedor disponivel no momento.", desktopState.suppliers.length ? "success" : "warning");
+    showDesktopMessage(desktopState.suppliers.length ? "Fornecedores carregados." : "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois.", desktopState.suppliers.length ? "success" : "warning");
     if (desktopState.selectedSupplierId) await loadDesktopProducts(desktopState.selectedSupplierId);
   } else {
     desktopState.suppliers = [];
     desktopState.products = [];
-    showDesktopMessage(desktopApiMessage(response, "Não foi possível carregar fornecedores agora."), "error");
+    showDesktopMessage(desktopApiMessage(response, "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois."), "error");
   }
   renderDesktopStep();
   renderDesktopPreview();
@@ -332,6 +332,8 @@ function calculateDesktopTotal() {
 
 async function saveDesktopLead() {
   syncDesktopInputs();
+  desktopState.leadWhatsapp = sanitizeDesktopPhone(desktopState.leadWhatsapp);
+  desktopState.leadEmail = sanitizeDesktopEmail(desktopState.leadEmail);
   if (!desktopState.leadWhatsapp && !desktopState.leadEmail) {
     showDesktopMessage("Informe WhatsApp ou e-mail para salvar sua loja.", "warning");
     return false;
@@ -350,12 +352,25 @@ async function saveDesktopLead() {
     businessType: desktopState.businessType,
     operationType: desktopState.operationType,
     categories: desktopState.categories,
+    identity: {
+      storeName: desktopState.storeName,
+      slogan: desktopState.slogan,
+      logo: initialsFrom(desktopState.storeName),
+      colors: desktopState.colors,
+      instagramBio: desktopState.instagramBio,
+      whatsappDescription: desktopState.whatsappDescription,
+      googleBusinessDescription: desktopState.googleBusinessDescription,
+      generatedIdentity: Boolean(desktopState.identity.generatedIdentity),
+    },
+    recommendedSupplier: selectedSupplier(),
     selectedSupplierId: desktopState.selectedSupplierId,
     selectedProducts: desktopState.selectedProducts,
     estimatedInitialStockValue: desktopState.total,
+    finalSummary: buildDesktopFinalSummary(),
     warrantyPolicy: desktopState.warrantyPolicy,
     generatedIdentity: Boolean(desktopState.identity.generatedIdentity),
     progress: 100,
+    source: "autozap-start",
   });
   if (response && response.ok) {
     desktopState.saved = true;
@@ -365,7 +380,7 @@ async function saveDesktopLead() {
     trackDesktopEvent("lead_saved", { storeName: desktopState.storeName, total: desktopState.total });
     return true;
   }
-  showDesktopMessage(desktopApiMessage(response, "Não foi possível salvar sua solicitação agora."), "error");
+  showDesktopMessage(desktopApiMessage(response, "Não foi possível salvar sua loja agora. Confira sua conexão e tente novamente."), "error");
   return false;
 }
 
@@ -682,6 +697,26 @@ function desktopApiMessage(error, fallback = "Não foi possível concluir agora.
   return error && (error.error || error.message) || fallback;
 }
 
+function buildDesktopFinalSummary() {
+  const supplier = selectedSupplier();
+  return {
+    storeName: desktopState.storeName,
+    slogan: desktopState.slogan,
+    city: formatLocation(),
+    operationType: desktopState.operationType,
+    capital: desktopState.capital,
+    categories: desktopState.categories,
+    supplier,
+    selectedItemsTotal: desktopState.selectedProducts.reduce((sum, product) => sum + Number(product.quantity || 0), 0),
+    estimatedInvestment: desktopState.total,
+    selectedProducts: desktopState.selectedProducts,
+    instagramPreview: {
+      handle: `@${slugify(desktopState.storeName)}.oficial`,
+      bio: desktopState.instagramBio,
+    },
+  };
+}
+
 function loadDesktopState() {
   try {
     const saved = JSON.parse(localStorage.getItem(DESKTOP_STATE_KEY)) || {};
@@ -732,6 +767,14 @@ function safeDesktopText(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function sanitizeDesktopEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function sanitizeDesktopPhone(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(Number(value) || 0);
 }
@@ -742,6 +785,10 @@ function getMainAutoZapUrl() {
 
 function initialsFrom(value) {
   return String(value || "TechCell").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word.charAt(0)).join("").toUpperCase() || "TC";
+}
+
+function slugify(value) {
+  return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
 }
 
 function options(items, selected) {

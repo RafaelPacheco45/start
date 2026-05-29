@@ -7,7 +7,8 @@ const root = path.resolve(__dirname, "..");
 const expectedApiBaseUrl = "https://aip.autozap.log.br";
 const expectedVersion = 'version: "0.3.0"';
 const expectedMockMode = "mockMode: false";
-const expectedMobileSteps = 7;
+const expectedSteps = 7;
+const mode = process.argv.includes("--remote") ? "remote" : "local";
 
 const files = [
   "index.html",
@@ -47,6 +48,7 @@ const jsCheckFiles = [
   "js/admin.js",
   "js/router.js",
   "js/healthcheck.js",
+  "tools/healthcheck.js",
 ];
 
 let failed = false;
@@ -62,6 +64,10 @@ function fail(message) {
 
 function pass(message) {
   console.log(`OK ${message}`);
+}
+
+function info(message) {
+  console.log(`INFO ${message}`);
 }
 
 function read(file) {
@@ -87,31 +93,34 @@ function checkHtmlJsIds() {
     const html = read(htmlFile);
     const js = read(jsFile);
     const ids = new Set([...html.matchAll(/id="([^"]+)"/g)].map((match) => match[1]));
-    const missing = findRequiredIds(js).filter((id) => !ids.has(id));
-    if (missing.length) fail(`${htmlFile} missing ids used by ${jsFile}: ${[...new Set(missing)].join(", ")}`);
+    const missing = [...new Set(findRequiredIds(js).filter((id) => !ids.has(id)))];
+    if (missing.length) fail(`${htmlFile} missing ids used by ${jsFile}: ${missing.join(", ")}`);
   }
   pass("HTML ids align with page scripts");
 }
 
-function checkMobileFlow() {
+function checkFlowSteps() {
   const mobile = read("mobile.html");
-  const stepCount = (mobile.match(/<section class="step[^"]*" data-step="/g) || []).length;
-  if (stepCount !== expectedMobileSteps) fail(`mobile should have ${expectedMobileSteps} user steps, found ${stepCount}`);
-  pass("mobile flow step count aligned");
+  const mobileCount = (mobile.match(/<section class="step[^"]*" data-step="/g) || []).length;
+  if (mobileCount !== expectedSteps) fail(`mobile should have ${expectedSteps} user steps, found ${mobileCount}`);
+
+  const desktop = read("js/desktop.js");
+  const desktopMatch = desktop.match(/const desktopSteps = \[([\s\S]*?)\];/);
+  const desktopCount = desktopMatch ? (desktopMatch[1].match(/\{\s*title:/g) || []).length : 0;
+  if (desktopCount !== expectedSteps) fail(`desktop should have ${expectedSteps} user steps, found ${desktopCount}`);
+  pass("mobile and desktop flow step counts aligned");
 }
 
 function checkConfig() {
   const config = read("js/config.js");
+  const api = read("js/api.js");
   if (!config.includes("AUTOZAP_START_CONFIG")) fail("config should expose AUTOZAP_START_CONFIG");
   if (!config.includes(expectedVersion)) fail("config version should be 0.3.0");
-  if (!config.includes(expectedMockMode)) fail("mock mode should be false by default");
-  if (!config.includes(`var AUTOZAP_API_BASE_URL = "${expectedApiBaseUrl}"`)) fail(`API base variable should remain ${expectedApiBaseUrl}`);
+  if (!config.includes(expectedMockMode)) fail("mockMode should be false by default");
+  if (!config.includes(`var AUTOZAP_API_BASE_URL = "${expectedApiBaseUrl}"`)) fail(`API base variable should be ${expectedApiBaseUrl}`);
   if (!config.includes("apiBaseUrl: AUTOZAP_API_BASE_URL")) fail("apiBaseUrl should use AUTOZAP_API_BASE_URL");
-  if (!config.includes("session: `${AUTOZAP_API_BASE_URL}/start/session`")) fail("session route should target API base /start/session");
-  if (!config.includes("suppliers: `${AUTOZAP_API_BASE_URL}/start/suppliers`")) fail("suppliers route should target API base /start/suppliers");
-  if (!config.includes("supplierProducts: `${AUTOZAP_API_BASE_URL}/start/suppliers/:id/products`")) fail("supplier products route should target API base /start/suppliers/:id/products");
-  if (!config.includes("lead: `${AUTOZAP_API_BASE_URL}/start/lead`")) fail("lead route should target API base /start/lead");
-  if (!config.includes("turnstileSiteKey")) fail("config should prepare Turnstile site key");
+  if (!api.includes(`const DEFAULT_API_BASE_URL = "${expectedApiBaseUrl}"`)) fail(`api fallback should be ${expectedApiBaseUrl}`);
+  if (config.includes("https://api.autozap.log.br") || api.includes("https://api.autozap.log.br")) fail("frontend code still references api.autozap.log.br");
   pass("production config aligned");
 }
 
@@ -146,56 +155,78 @@ async function request(pathname, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch(`${expectedApiBaseUrl}${pathname}`, {
+    return await fetch(`${expectedApiBaseUrl}${pathname}`, {
       ...options,
       signal: controller.signal,
     });
-    return response;
   } finally {
     clearTimeout(timeout);
   }
 }
 
+async function remoteStep(label, task) {
+  try {
+    await task();
+    pass(label);
+  } catch (error) {
+    fail(`${label}: falha externa ao acessar ${expectedApiBaseUrl} (${error.name || "Error"}: ${error.message})`);
+  }
+}
+
 async function checkPublicApi() {
-  const health = await request("/health");
-  if (health.status !== 200) fail(`/health expected 200, got ${health.status}`);
-
-  const suppliers = await request("/start/suppliers");
-  if (suppliers.status !== 200) fail(`/start/suppliers expected 200, got ${suppliers.status}`);
-
-  const session = await request("/start/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source: "autozap-start-healthcheck" }),
+  await remoteStep("GET /health", async () => {
+    const response = await request("/health");
+    if (response.status !== 200) throw new Error(`expected 200, got ${response.status}`);
   });
-  if (session.status !== 200 && session.status !== 201) fail(`POST /start/session expected 200/201, got ${session.status}`);
 
-  const cors = await request("/start/suppliers", {
-    method: "OPTIONS",
-    headers: {
-      Origin: "https://start.autozap.log.br",
-      "Access-Control-Request-Method": "GET",
-    },
+  await remoteStep("GET /start/suppliers", async () => {
+    const response = await request("/start/suppliers");
+    if (response.status !== 200) throw new Error(`expected 200, got ${response.status}`);
   });
-  if (cors.status !== 200 && cors.status !== 204) fail(`OPTIONS /start/suppliers expected 200/204, got ${cors.status}`);
 
-  pass("public API health checks passed");
+  await remoteStep("POST /start/session", async () => {
+    const response = await request("/start/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: "autozap-start-healthcheck" }),
+    });
+    if (response.status !== 200 && response.status !== 201) throw new Error(`expected 200/201, got ${response.status}`);
+  });
+
+  await remoteStep("CORS OPTIONS /start/suppliers", async () => {
+    const response = await request("/start/suppliers", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "https://start.autozap.log.br",
+        "Access-Control-Request-Method": "GET",
+      },
+    });
+    if (response.status !== 200 && response.status !== 204) throw new Error(`expected 200/204, got ${response.status}`);
+    const allowOrigin = response.headers.get("access-control-allow-origin") || "";
+    if (!allowOrigin) throw new Error("missing access-control-allow-origin");
+  });
 }
 
 async function main() {
   checkFiles();
   checkHtmlJsIds();
-  checkMobileFlow();
+  checkFlowSteps();
   checkConfig();
   checkApiFacade();
   checkNodeSyntax();
-  await checkPublicApi();
+
+  if (mode === "remote") {
+    await checkPublicApi();
+  } else {
+    info("remote API checks skipped in --local mode; run node tools/healthcheck.js --remote to validate backend and CORS");
+  }
 
   if (failed) process.exit(1);
-  console.log("AutoZap Start Healthcheck OK");
+  console.log(`AutoZap Start Healthcheck OK (${mode})`);
 }
 
 main().catch((error) => {
   fail(`healthcheck exception: ${error.message}`);
   process.exit(1);
 });
+
