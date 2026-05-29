@@ -105,3 +105,4 @@ localStorage.removeItem("autozap_start_usage")
 - Producao nao depende de `server/server.js`.
 - Dominio recomendado: `start.autozap.log.br`.
 - API real mantida: `https://aip.autozap.log.br`.
+

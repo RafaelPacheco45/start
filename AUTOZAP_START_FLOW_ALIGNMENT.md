@@ -82,3 +82,4 @@ Nao ha teste de `/start/admin/metrics`; essa rota foi tratada como criterio anti
 
 - Validar visualmente o fluxo completo em navegador quando a automacao/browser estiver disponivel.
 - Implementar integracoes reais ainda listadas no README: IA real, imagem/logo real, banco de dados, Turnstile, analytics reais e integracao completa com AutoZap principal.
+

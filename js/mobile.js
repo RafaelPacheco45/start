@@ -11,7 +11,7 @@ const FLOW_STARTED_AT = Date.now();
 
 const defaultStore = {
   currentStep: 0,
-  storeName: "TechCell",
+  storeName: "",
   slogan: "Celulares, acessórios e assistência sem complicação.",
   city: "",
   capital: "Até R$ 1.000",
@@ -150,7 +150,7 @@ function messageForApiFailure(error, fallback = "Não foi possível concluir ago
   const context = error && error.context;
   if (!status && (error && (error.fetchFailed || error.status === 0))) return "Não foi possível acessar a API. Verifique conexão/CORS.";
   if (context === "lead_save_failed") return "Não foi possível salvar sua solicitação agora.";
-  if (context === "suppliers_load_failed") return status || error.fetchFailed ? "Não foi possível carregar fornecedores reais agora." : "Nenhum fornecedor disponível no momento.";
+  if (context === "suppliers_load_failed") return status || error.fetchFailed ? "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois." : "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois.";
   if (context === "supplier_products_load_failed") return status || error.fetchFailed ? "Não foi possível carregar produtos reais agora." : "Este fornecedor ainda não possui produtos disponíveis.";
   if (status === 400 || status === 422) return "Dados incompletos ou inválidos.";
   if (status === 404) return "Recurso não encontrado na API.";
@@ -417,7 +417,7 @@ async function generateMockIdentity() {
       } else {
         imageNotice = imageResponse && imageResponse.status === 429
           ? (imageResponse.message || "Limite de geração de imagem atingido. Tente novamente em alguns minutos.")
-          : "Imagem automática indisponível agora. Usamos uma prévia provisória.";
+          : (imageResponse && imageResponse.message) || "Imagem automática indisponível agora. Usamos uma prévia provisória.";
         store.imageGenerationNotice = imageNotice;
         trackEvent("identity_image_fallback", {
           status: imageResponse && imageResponse.status,
@@ -501,7 +501,7 @@ async function loadStartSuppliers({ force = false } = {}) {
       saveLocalProgress();
       return response.suppliers;
     }
-    store.supplierLoadError = response.ok ? "Nenhum fornecedor disponível no momento." : messageForApiFailure(response, "Não foi possível carregar fornecedores reais agora.");
+    store.supplierLoadError = response.ok ? "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois." : messageForApiFailure(response, "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois.");
     store.availableSuppliers = [];
     store.recommendedSupplier = null;
     store.selectedSupplierId = "";
@@ -534,7 +534,7 @@ async function loadStartSupplierProducts(supplierId, { force = false } = {}) {
       saveLocalProgress();
       return response.products;
     }
-    store.productsLoadError = response.ok ? "Este fornecedor ainda não possui produtos disponíveis." : messageForApiFailure(response, "Não foi possível carregar produtos reais agora.");
+    store.productsLoadError = response.ok ? "Este fornecedor ainda não possui produtos disponíveis." : messageForApiFailure(response, "Este fornecedor ainda não possui produtos disponíveis.");
     store.availableProducts = [];
     store.selectedProducts = [];
     saveLocalProgress();
@@ -572,13 +572,13 @@ function findRecommendedSupplier(userData = {}) {
   if (!canUseDevelopmentMockFallback()) {
     return {
       id: "",
-      supplierName: store.supplierLoadError || "Nenhum fornecedor disponível no momento.",
+      supplierName: store.supplierLoadError || "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois.",
       city: "",
       distance: "",
       categories: [],
       deliveryTime: "",
       reliabilityScore: 0,
-      recommendedReason: store.supplierLoadError || "Nenhum fornecedor disponível no momento.",
+      recommendedReason: store.supplierLoadError || "Não foi possível carregar fornecedores agora. Você ainda pode continuar e ajustar depois.",
     };
   }
   const city = normalizeText(userData.city || "");
@@ -669,32 +669,9 @@ async function saveStoreAndExport() {
     return;
   }
   const result = await withLoading("Salvando sua loja...", async () => {
-    const leadResponse = await AutoZapAPI.saveLead({
-      name: store.storeName,
-      phone: store.leadWhatsapp,
-      email: store.leadEmail,
-      contact: store.leadWhatsapp || store.leadEmail,
-      contactType: store.leadWhatsapp ? "whatsapp" : "email",
-      storeName: store.storeName,
-      city: store.city,
-      state: "",
-      capital: store.capital,
-      businessType: store.operationType,
-      operationType: store.operationType,
-      selectedSupplierId: (store.recommendedSupplier && store.recommendedSupplier.id) || store.selectedSupplierId,
-      selectedProducts: normalizeSelectedProducts(store.selectedProducts),
-      estimatedInitialStockValue: getSelectedProductsTotal(),
-      diagnostic: {
-        capital: store.capital,
-        focus: store.focus,
-        categories: store.categories,
-        margin: store.margin,
-      },
-      progress: Math.round((getCurrentStep() / (steps.length - 1)) * 100),
-      generatedIdentity: store.generatedIdentity,
-    });
+    const leadResponse = await AutoZapAPI.saveLead(buildLeadPayload());
     if (leadResponse && leadResponse.ok === false) {
-      const leadError = messageForApiFailure(leadResponse, "Não foi possível salvar sua solicitação agora.");
+      const leadError = messageForApiFailure(leadResponse, "Não foi possível salvar sua loja agora. Confira sua conexão e tente novamente.");
       document.querySelector("#saveMessage").textContent = leadError;
       document.querySelector("#saveMessage").hidden = false;
       return { leadSaved: false, error: leadError, response: leadResponse };
@@ -763,10 +740,55 @@ function exportToAutoZap() {
       stockPlan: store.stockPlan,
       margin: store.margin,
       scripts: store.scripts,
-      source: canUseDevelopmentMockFallback() ? "AutoZap Start mock" : "AutoZap Start real-api",
+      source: canUseDevelopmentMockFallback() ? "AutoZap Start dev" : "AutoZap Start real-api",
       usage: AutoZapAPI.getUsage(),
     },
   });
+}
+
+function buildLeadPayload() {
+  const selectedProducts = normalizeSelectedProducts(store.selectedProducts);
+  const finalSummary = buildFinalSummary();
+  const recommendedSupplier = store.recommendedSupplier || findRecommendedSupplier({ city: store.city, categories: store.categories, capital: store.capital });
+  return {
+    name: store.storeName,
+    phone: store.leadWhatsapp,
+    email: store.leadEmail,
+    contact: store.leadWhatsapp || store.leadEmail,
+    contactType: store.leadWhatsapp ? "whatsapp" : "email",
+    storeName: store.storeName,
+    city: store.city,
+    state: "",
+    capital: store.capital,
+    businessType: store.operationType,
+    operationType: store.operationType,
+    categories: store.categories,
+    identity: {
+      storeName: store.storeName,
+      slogan: store.slogan,
+      logo: store.logo,
+      colors: store.colors,
+      instagramBio: store.instagramBio,
+      whatsappDescription: store.whatsappDescription,
+      googleBusinessDescription: store.googleBusinessDescription,
+      generatedIdentity: Boolean(store.generatedIdentity),
+    },
+    recommendedSupplier,
+    selectedSupplierId: (recommendedSupplier && recommendedSupplier.id) || store.selectedSupplierId,
+    selectedProducts,
+    estimatedInitialStockValue: getSelectedProductsTotal() || finalSummary.estimatedInvestment,
+    finalSummary,
+    diagnostic: {
+      capital: store.capital,
+      focus: store.focus,
+      categories: store.categories,
+      margin: store.margin,
+      operationType: store.operationType,
+    },
+    progress: Math.round((getCurrentStep() / (steps.length - 1)) * 100),
+    generatedIdentity: store.generatedIdentity,
+    source: "autozap-start",
+  };
 }
 
 function getMainAutoZapUrl() {
@@ -774,7 +796,7 @@ function getMainAutoZapUrl() {
 }
 
 function getOnlineStoreHelpUrl() {
-  const message = `Olá, quero ajuda para criar uma loja online/site para a ${store.storeName}.`;
+  const message = `Olá, quero ajuda para criar uma loja online/site para a ${visualStoreName()}.`;
   return config.onlineStoreHelpUrl || `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
@@ -789,22 +811,23 @@ function syncFormState() {
   store.focusAreas = Array.from(document.querySelectorAll('[data-choice="focus"] button.selected')).map((button) => button.dataset.value);
   if (!store.focusAreas.length) store.focusAreas = ["Acessórios"];
   store.focus = store.focusAreas.join(", ");
-  store.leadEmail = document.querySelector("#leadEmail").value.trim();
-  store.leadWhatsapp = document.querySelector("#leadWhatsapp").value.trim();
+  store.leadEmail = sanitizeEmail(document.querySelector("#leadEmail").value);
+  store.leadWhatsapp = sanitizePhone(document.querySelector("#leadWhatsapp").value);
 }
 
 function renderStoreData() {
-  const logo = store.logo || initialsFrom(store.storeName);
+  const displayName = visualStoreName();
+  const logo = store.logo || initialsFrom(displayName);
   renderLogoTarget("#logoLetters", logo);
-  document.querySelector("#logoName").textContent = store.storeName;
+  document.querySelector("#logoName").textContent = displayName;
   renderLogoTarget("#previewLogo", logo);
-  document.querySelector("#previewName").textContent = store.storeName;
+  document.querySelector("#previewName").textContent = displayName;
   document.querySelector("#previewCity").textContent = store.city || "São Paulo - SP";
   const finalSlogan = document.querySelector("#finalSlogan");
   if (finalSlogan) finalSlogan.textContent = store.slogan;
   renderLogoTarget("#igAvatar", logo);
-  document.querySelector("#igName").textContent = store.storeName;
-  document.querySelector("#igHandle").textContent = `@${slugify(store.storeName)}.oficial`;
+  document.querySelector("#igName").textContent = displayName;
+  document.querySelector("#igHandle").textContent = `@${slugify(displayName)}.oficial`;
   document.querySelector("#igBio").textContent = store.instagramBio;
   const quoteButton = document.querySelector("#onlineStoreQuoteBtn");
   if (quoteButton) quoteButton.href = getOnlineStoreQuoteUrl();
@@ -877,8 +900,8 @@ function renderInitialStockPlan() {
 
 function renderFinalSummary() {
   const summary = {
-    "#summaryName": store.storeName,
-    "#summarySlogan": store.slogan,
+    "#summaryName": visualStoreName(),
+    "#summarySlogan": store.slogan || "Celulares, acessórios e assistência sem complicação.",
     "#summaryCity": store.city || "São Paulo",
     "#summaryOperation": store.operationType,
     "#summaryCategories": store.categories.join(", ") || "Celulares, Acessórios",
@@ -889,7 +912,7 @@ function renderFinalSummary() {
     const target = document.querySelector(selector);
     if (target) target.textContent = value;
   });
-  renderLogoTarget("#summaryLogo", store.logo || initialsFrom(store.storeName));
+  renderLogoTarget("#summaryLogo", store.logo || initialsFrom(visualStoreName()));
   renderOnlineStoreOffer();
   const completeSummary = buildFinalSummary();
   if (getCurrentStep() >= 5) console.log("AutoZap Start resumo final", completeSummary);
@@ -901,17 +924,17 @@ function buildFinalSummary() {
   const stockPlan = store.initialStockPlan || generateInitialStockPlan({ capital: store.capital, categories: store.categories }, supplier);
   const selected = normalizeSelectedProducts(store.selectedProducts);
   return {
-    storeName: store.storeName,
+    storeName: visualStoreName(),
     slogan: store.slogan,
     city: store.city || "São Paulo - SP",
-    logo: store.logo || initialsFrom(store.storeName),
+    logo: store.logo || initialsFrom(visualStoreName()),
     supplier,
     selectedItemsTotal: selected.reduce((sum, product) => sum + product.quantity, 0) || getInitialStockItemTotal(stockPlan),
     estimatedInvestment: getSelectedProductsTotal() || stockPlan.recommendedInvestment,
     selectedProducts: selected,
     stockPlan,
     instagramPreview: {
-      handle: `@${slugify(store.storeName)}.oficial`,
+      handle: `@${slugify(visualStoreName())}.oficial`,
       bio: store.instagramBio,
       posts: (store.posts.length ? store.posts : [
         { title: "Chegaram novos modelos", caption: "Vitrine de lançamento" },
@@ -1188,6 +1211,10 @@ function initialsFrom(value) {
   return String(value || "").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word.charAt(0)).join("").toUpperCase() || "TC";
 }
 
+function visualStoreName() {
+  return safeText(store.storeName) || "TechCell";
+}
+
 function slugify(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
 }
@@ -1202,6 +1229,14 @@ function safeString(value, fallback = "") {
 
 function safeText(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function sanitizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function sanitizePhone(value) {
+  return String(value || "").replace(/\D/g, "");
 }
 
 function capitalToNumber(value) {

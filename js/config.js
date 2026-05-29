@@ -8,7 +8,9 @@ window.AUTOZAP_START_CONFIG = {
   onlineStoreHelpUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20ajuda%20para%20criar%20minha%20loja%20online%20%2F%20site.",
   onlineStoreQuoteUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20para%20criar%20minha%20loja%20online%20com%20a%20AutoZap%20Start.",
   mockMode: false,
-  requestTimeoutMs: 12000,
+  requestTimeoutMs: 15000,
+  diagnosticRequestTimeoutMs: 30000,
+  imageRequestTimeoutMs: 60000,
   turnstileSiteKey: "",
   limits: {
     anonymousVisualGenerations: 1,
@@ -51,3 +53,4 @@ window.AUTOZAP_START_CONFIG = {
 };
 
 window.AutoZapConfig = window.AUTOZAP_START_CONFIG;
+

@@ -32,3 +32,4 @@ Data: 2026-05-24
 ## Observacao da API em 2026-05-24
 
 `/start/suppliers` respondeu 200, mas os primeiros fornecedores retornados estavam com `status: deleted`. A camada de API filtra `deleted`, `inactive` e `disabled`; se nao houver fornecedor ativo, a UI mostra `Nenhum fornecedor disponível no momento.`
+

@@ -23,3 +23,4 @@ Pendencias:
 
 - Confirmar com o Core Server se `/start/diagnostic`, `/start/image`, `/ai/start-diagnostic` e `/ai/start-image` estao ativos para os fluxos de IA real.
 - Confirmar URL especifica de cadastro/plano no AutoZap, caso exista alem de `https://autozap.log.br`.
+

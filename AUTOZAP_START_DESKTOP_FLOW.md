@@ -73,3 +73,4 @@ localStorage.setItem("DEBUG_API", "1")
 7. Selecionar fornecedor e produtos.
 8. Salvar lead.
 9. Continuar para `https://autozap.log.br`.
+
