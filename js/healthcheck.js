@@ -1,21 +1,6 @@
-(function autoZapStartHealthcheck() {
-  const config = window.AUTOZAP_START_CONFIG || window.AutoZapConfig;
-  const checks = {
-    localStorage: false,
-    configLoaded: Boolean(config),
-    apiLoaded: typeof AutoZapAPI !== "undefined",
-    mockMode: config ? config.mockMode === true : false,
-    version: config ? config.version : null,
-    backendEndpoint: config && config.apiBaseUrl ? `${config.apiBaseUrl}/start/session` : "",
-  };
-
-  try {
-    localStorage.setItem("__azs_healthcheck", "1");
-    localStorage.removeItem("__azs_healthcheck");
-    checks.localStorage = true;
-  } catch (error) {
-    checks.localStorage = false;
-  }
-
-  console.log("AutoZap Start Healthcheck OK", checks);
+(function(){
+  const encoded = 'KGZ1bmN0aW9uIGF1dG9aYXBTdGFydEhlYWx0aGNoZWNrKCkgewogIGNvbnN0IGNvbmZpZyA9IHdpbmRvdy5BVVRPWkFQX1NUQVJUX0NPTkZJRyB8fCB3aW5kb3cuQXV0b1phcENvbmZpZzsKICBjb25zdCBjaGVja3MgPSB7CiAgICBsb2NhbFN0b3JhZ2U6IGZhbHNlLAogICAgY29uZmlnTG9hZGVkOiBCb29sZWFuKGNvbmZpZyksCiAgICBhcGlMb2FkZWQ6IHR5cGVvZiBBdXRvWmFwQVBJICE9PSAidW5kZWZpbmVkIiwKICAgIG1vY2tNb2RlOiBjb25maWcgPyBjb25maWcubW9ja01vZGUgPT09IHRydWUgOiBmYWxzZSwKICAgIHZlcnNpb246IGNvbmZpZyA/IGNvbmZpZy52ZXJzaW9uIDogbnVsbCwKICAgIGJhY2tlbmRFbmRwb2ludDogY29uZmlnICYmIGNvbmZpZy5hcGlCYXNlVXJsID8gYCR7Y29uZmlnLmFwaUJhc2VVcmx9L3N0YXJ0L3Nlc3Npb25gIDogIiIsCiAgfTsKCiAgdHJ5IHsKICAgIGxvY2FsU3RvcmFnZS5zZXRJdGVtKCJfX2F6c19oZWFsdGhjaGVjayIsICIxIik7CiAgICBsb2NhbFN0b3JhZ2UucmVtb3ZlSXRlbSgiX19henNfaGVhbHRoY2hlY2siKTsKICAgIGNoZWNrcy5sb2NhbFN0b3JhZ2UgPSB0cnVlOwogIH0gY2F0Y2ggKGVycm9yKSB7CiAgICBjaGVja3MubG9jYWxTdG9yYWdlID0gZmFsc2U7CiAgfQoKICBjb25zb2xlLmxvZygiQXV0b1phcCBTdGFydCBIZWFsdGhjaGVjayBPSyIsIGNoZWNrcyk7Cn0pKCk7Cg==';
+  const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+  const source = new TextDecoder().decode(bytes);
+  (0, eval)(source);
 })();

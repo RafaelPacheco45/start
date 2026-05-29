@@ -38,6 +38,10 @@ O servidor tem mocks de:
 
 O Turnstile ainda não é exibido no frontend. No futuro, envie o token no payload e valide em `verifyTurnstileMock`.
 
+## Admin
+
+As rotas `/api/start/admin/metrics`, `/api/start/admin/leads` e `/api/start/admin/sessions` ficam disponíveis para o painel interno, que bloqueia o acesso no frontend com login local.
+
 ## IA Real
 
 Os endpoints retornam mocks estruturados. Quando a IA real entrar, mantenha o contrato `{ ok, data }` e substitua apenas a lógica interna dos handlers.

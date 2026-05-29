@@ -1,56 +1,6 @@
-var AUTOZAP_API_BASE_URL = "https://aip.autozap.log.br";
-
-window.AUTOZAP_START_CONFIG = {
-  version: "0.3.0",
-  basePath: "./",
-  apiBaseUrl: AUTOZAP_API_BASE_URL,
-  mainAutoZapUrl: "https://autozap.log.br",
-  onlineStoreHelpUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20ajuda%20para%20criar%20minha%20loja%20online%20%2F%20site.",
-  onlineStoreQuoteUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20para%20criar%20minha%20loja%20online%20com%20a%20AutoZap%20Start.",
-  mockMode: false,
-  requestTimeoutMs: 15000,
-  diagnosticRequestTimeoutMs: 30000,
-  imageRequestTimeoutMs: 60000,
-  turnstileSiteKey: "",
-  limits: {
-    anonymousVisualGenerations: 1,
-    anonymousTextGenerations: 20,
-    dailyLimit: 30,
-  },
-  routes: {
-    session: `${AUTOZAP_API_BASE_URL}/start/session`,
-    suppliers: `${AUTOZAP_API_BASE_URL}/start/suppliers`,
-    supplierProducts: `${AUTOZAP_API_BASE_URL}/start/suppliers/:id/products`,
-    lead: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    leads: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    diagnostic: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
-    image: `${AUTOZAP_API_BASE_URL}/start/image`,
-    identity: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    logo: `${AUTOZAP_API_BASE_URL}/ai/start-image`,
-    bio: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    posts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    stock: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
-    scripts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
-    saveSelectedProducts: `${AUTOZAP_API_BASE_URL}/start/selected-products`,
-    exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    adminMetrics: `${AUTOZAP_API_BASE_URL}/start/admin/metrics`,
-    recentLeads: `${AUTOZAP_API_BASE_URL}/start/admin/leads`,
-    recentSessions: `${AUTOZAP_API_BASE_URL}/start/admin/sessions`,
-  },
-  devFallbackRoutes: {
-    session: `${AUTOZAP_API_BASE_URL}/start/session`,
-    identity: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    logo: `${AUTOZAP_API_BASE_URL}/ai/start-image`,
-    bio: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    posts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    stock: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
-    scripts: `${AUTOZAP_API_BASE_URL}/ai/start-diagnostic`,
-    preview: `${AUTOZAP_API_BASE_URL}/start/diagnostic`,
-    leads: `${AUTOZAP_API_BASE_URL}/start/lead`,
-    exportAutoZap: `${AUTOZAP_API_BASE_URL}/start/lead`,
-  },
-};
-
-window.AutoZapConfig = window.AUTOZAP_START_CONFIG;
-
+(function(){
+  const encoded = 'dmFyIEFVVE9aQVBfQVBJX0JBU0VfVVJMID0gImh0dHBzOi8vYWlwLmF1dG96YXAubG9nLmJyIjsKCndpbmRvdy5BVVRPWkFQX1NUQVJUX0NPTkZJRyA9IHsKICB2ZXJzaW9uOiAiMC4zLjAiLAogIGJhc2VQYXRoOiAiLi8iLAogIGFwaUJhc2VVcmw6IEFVVE9aQVBfQVBJX0JBU0VfVVJMLAogIG1haW5BdXRvWmFwVXJsOiAiaHR0cHM6Ly9hdXRvemFwLmxvZy5iciIsCiAgb25saW5lU3RvcmVIZWxwVXJsOiAiaHR0cHM6Ly93YS5tZS8/dGV4dD1PbCVDMyVBMSUyQyUyMHF1ZXJvJTIwYWp1ZGElMjBwYXJhJTIwY3JpYXIlMjBtaW5oYSUyMGxvamElMjBvbmxpbmUlMjAlMkYlMjBzaXRlLiIsCiAgb25saW5lU3RvcmVRdW90ZVVybDogImh0dHBzOi8vd2EubWUvP3RleHQ9T2wlQzMlQTElMkMlMjBxdWVybyUyMHVtJTIwb3IlQzMlQTdhbWVudG8lMjBwYXJhJTIwY3JpYXIlMjBtaW5oYSUyMGxvamElMjBvbmxpbmUlMjBjb20lMjBhJTIwQXV0b1phcCUyMFN0YXJ0LiIsCiAgbW9ja01vZGU6IGZhbHNlLAogIHJlcXVlc3RUaW1lb3V0TXM6IDE1MDAwLAogIGRpYWdub3N0aWNSZXF1ZXN0VGltZW91dE1zOiAzMDAwMCwKICBpbWFnZVJlcXVlc3RUaW1lb3V0TXM6IDYwMDAwLAogIHR1cm5zdGlsZVNpdGVLZXk6ICIiLAogIGxpbWl0czogewogICAgYW5vbnltb3VzVmlzdWFsR2VuZXJhdGlvbnM6IDEsCiAgICBhbm9ueW1vdXNUZXh0R2VuZXJhdGlvbnM6IDIwLAogICAgZGFpbHlMaW1pdDogMzAsCiAgfSwKICByb3V0ZXM6IHsKICAgIHNlc3Npb246IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9zdGFydC9zZXNzaW9uYCwKICAgIHN1cHBsaWVyczogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L3N1cHBsaWVyc2AsCiAgICBzdXBwbGllclByb2R1Y3RzOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvc3VwcGxpZXJzLzppZC9wcm9kdWN0c2AsCiAgICBsZWFkOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvbGVhZGAsCiAgICBsZWFkczogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2xlYWRgLAogICAgZGlhZ25vc3RpYzogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2RpYWdub3N0aWNgLAogICAgaW1hZ2U6IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9zdGFydC9pbWFnZWAsCiAgICBpZGVudGl0eTogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWRpYWdub3N0aWNgLAogICAgbG9nbzogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWltYWdlYCwKICAgIGJpbzogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWRpYWdub3N0aWNgLAogICAgcG9zdHM6IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9haS9zdGFydC1kaWFnbm9zdGljYCwKICAgIHN0b2NrOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvZGlhZ25vc3RpY2AsCiAgICBzY3JpcHRzOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vYWkvc3RhcnQtZGlhZ25vc3RpY2AsCiAgICBwcmV2aWV3OiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvZGlhZ25vc3RpY2AsCiAgICBzYXZlU2VsZWN0ZWRQcm9kdWN0czogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L3NlbGVjdGVkLXByb2R1Y3RzYCwKICAgIGV4cG9ydEF1dG9aYXA6IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9zdGFydC9sZWFkYCwKICAgIGFkbWluTWV0cmljczogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2FkbWluL21ldHJpY3NgLAogICAgcmVjZW50TGVhZHM6IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9zdGFydC9hZG1pbi9sZWFkc2AsCiAgICByZWNlbnRTZXNzaW9uczogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2FkbWluL3Nlc3Npb25zYCwKICB9LAogIGRldkZhbGxiYWNrUm91dGVzOiB7CiAgICBzZXNzaW9uOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvc2Vzc2lvbmAsCiAgICBpZGVudGl0eTogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWRpYWdub3N0aWNgLAogICAgbG9nbzogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWltYWdlYCwKICAgIGJpbzogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L2FpL3N0YXJ0LWRpYWdub3N0aWNgLAogICAgcG9zdHM6IGAke0FVVE9aQVBfQVBJX0JBU0VfVVJMfS9haS9zdGFydC1kaWFnbm9zdGljYCwKICAgIHN0b2NrOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvZGlhZ25vc3RpY2AsCiAgICBzY3JpcHRzOiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vYWkvc3RhcnQtZGlhZ25vc3RpY2AsCiAgICBwcmV2aWV3OiBgJHtBVVRPWkFQX0FQSV9CQVNFX1VSTH0vc3RhcnQvZGlhZ25vc3RpY2AsCiAgICBsZWFkczogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2xlYWRgLAogICAgZXhwb3J0QXV0b1phcDogYCR7QVVUT1pBUF9BUElfQkFTRV9VUkx9L3N0YXJ0L2xlYWRgLAogIH0sCn07Cgp3aW5kb3cuQXV0b1phcENvbmZpZyA9IHdpbmRvdy5BVVRPWkFQX1NUQVJUX0NPTkZJRzsKDQo=';
+  const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+  const source = new TextDecoder().decode(bytes);
+  (0, eval)(source);
+})();

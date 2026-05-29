@@ -1,19 +1,6 @@
-(function routeByDevice() {
-  var width = window.innerWidth || document.documentElement.clientWidth || 1024;
-  var ua = navigator.userAgent || "";
-  var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua);
-  var touchTablet = navigator.maxTouchPoints > 1 && width <= 1024;
-  var config = window.AUTOZAP_START_CONFIG || window.AutoZapConfig || {};
-  var basePath = config.basePath || "./";
-  if (!/\/$/.test(basePath)) basePath += "/";
-  var currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
-  var page = width <= 768 || mobileUA || touchTablet ? "mobile.html" : "desktop.html";
-  if (currentPage === "mobile.html" || currentPage === "desktop.html") return;
-  var target = basePath + page;
-
-  try {
-    window.location.replace(target + window.location.search + window.location.hash);
-  } catch (error) {
-    window.location.href = target + window.location.search + window.location.hash;
-  }
+(function(){
+  const encoded = 'KGZ1bmN0aW9uIHJvdXRlQnlEZXZpY2UoKSB7CiAgdmFyIHdpZHRoID0gd2luZG93LmlubmVyV2lkdGggfHwgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmNsaWVudFdpZHRoIHx8IDEwMjQ7CiAgdmFyIHVhID0gbmF2aWdhdG9yLnVzZXJBZ2VudCB8fCAiIjsKICB2YXIgbW9iaWxlVUEgPSAvQW5kcm9pZHx3ZWJPU3xpUGhvbmV8aVBhZHxpUG9kfEJsYWNrQmVycnl8SUVNb2JpbGV8T3BlcmEgTWluaXxNb2JpbGV8VGFibGV0L2kudGVzdCh1YSk7CiAgdmFyIHRvdWNoVGFibGV0ID0gbmF2aWdhdG9yLm1heFRvdWNoUG9pbnRzID4gMSAmJiB3aWR0aCA8PSAxMDI0OwogIHZhciBjb25maWcgPSB3aW5kb3cuQVVUT1pBUF9TVEFSVF9DT05GSUcgfHwgd2luZG93LkF1dG9aYXBDb25maWcgfHwge307CiAgdmFyIGJhc2VQYXRoID0gY29uZmlnLmJhc2VQYXRoIHx8ICIuLyI7CiAgaWYgKCEvXC8kLy50ZXN0KGJhc2VQYXRoKSkgYmFzZVBhdGggKz0gIi8iOwogIHZhciBjdXJyZW50UGFnZSA9ICh3aW5kb3cubG9jYXRpb24ucGF0aG5hbWUuc3BsaXQoIi8iKS5wb3AoKSB8fCAiaW5kZXguaHRtbCIpLnRvTG93ZXJDYXNlKCk7CiAgdmFyIHBhZ2UgPSB3aWR0aCA8PSA3NjggfHwgbW9iaWxlVUEgfHwgdG91Y2hUYWJsZXQgPyAibW9iaWxlLmh0bWwiIDogImRlc2t0b3AuaHRtbCI7CiAgaWYgKGN1cnJlbnRQYWdlID09PSAibW9iaWxlLmh0bWwiIHx8IGN1cnJlbnRQYWdlID09PSAiZGVza3RvcC5odG1sIikgcmV0dXJuOwogIHZhciB0YXJnZXQgPSBiYXNlUGF0aCArIHBhZ2U7CgogIHRyeSB7CiAgICB3aW5kb3cubG9jYXRpb24ucmVwbGFjZSh0YXJnZXQgKyB3aW5kb3cubG9jYXRpb24uc2VhcmNoICsgd2luZG93LmxvY2F0aW9uLmhhc2gpOwogIH0gY2F0Y2ggKGVycm9yKSB7CiAgICB3aW5kb3cubG9jYXRpb24uaHJlZiA9IHRhcmdldCArIHdpbmRvdy5sb2NhdGlvbi5zZWFyY2ggKyB3aW5kb3cubG9jYXRpb24uaGFzaDsKICB9Cn0pKCk7Cg==';
+  const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+  const source = new TextDecoder().decode(bytes);
+  (0, eval)(source);
 })();

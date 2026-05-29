@@ -17,7 +17,7 @@ app.use(detectRiskMock);
 
 app.get("/api/start/health", (req, res) => ok(res, {
   service: "autozap-start",
-  version: "0.2.0",
+  version: "0.3.0",
   mockMode: process.env.MOCK_MODE !== "false",
   uptime: process.uptime(),
 }));

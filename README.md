@@ -104,7 +104,9 @@ O desktop nao depende de `server/server.js` em producao e nao ativa mock automat
 
 ## Admin
 
-`admin.html` simula um painel operacional com:
+`admin.html` abre um painel restrito com login local por usuário e senha. O controle é feito no próprio site, sem depender de autenticação no servidor.
+
+Depois do login, o painel mostra:
 
 - sessões iniciadas;
 - lojas criadas;
