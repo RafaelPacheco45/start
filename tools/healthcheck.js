@@ -32,12 +32,19 @@ const files = [
   "assets/start-hero-banner.png",
   "README.md",
   "AUTOZAP_START_FLOW_ALIGNMENT.md",
+  "source/js/config.js",
+  "source/js/api.js",
+  "source/js/mobile.js",
+  "source/js/desktop.js",
+  "source/js/admin.js",
+  "source/js/router.js",
+  "source/js/healthcheck.js",
 ];
 
 const htmlJsPairs = [
-  ["mobile.html", "js/mobile.js"],
-  ["desktop.html", "js/desktop.js"],
-  ["admin.html", "js/admin.js"],
+  ["mobile.html", "source/js/mobile.js"],
+  ["desktop.html", "source/js/desktop.js"],
+  ["admin.html", "source/js/admin.js"],
 ];
 
 const jsCheckFiles = [
@@ -48,6 +55,13 @@ const jsCheckFiles = [
   "js/admin.js",
   "js/router.js",
   "js/healthcheck.js",
+  "source/js/config.js",
+  "source/js/api.js",
+  "source/js/mobile.js",
+  "source/js/desktop.js",
+  "source/js/admin.js",
+  "source/js/router.js",
+  "source/js/healthcheck.js",
   "tools/healthcheck.js",
 ];
 
@@ -104,7 +118,7 @@ function checkFlowSteps() {
   const mobileCount = (mobile.match(/<section class="step[^"]*" data-step="/g) || []).length;
   if (mobileCount !== expectedSteps) fail(`mobile should have ${expectedSteps} user steps, found ${mobileCount}`);
 
-  const desktop = read("js/desktop.js");
+  const desktop = read("source/js/desktop.js");
   const desktopMatch = desktop.match(/const desktopSteps = \[([\s\S]*?)\];/);
   const desktopCount = desktopMatch ? (desktopMatch[1].match(/\{\s*title:/g) || []).length : 0;
   if (desktopCount !== expectedSteps) fail(`desktop should have ${expectedSteps} user steps, found ${desktopCount}`);
@@ -112,8 +126,8 @@ function checkFlowSteps() {
 }
 
 function checkConfig() {
-  const config = read("js/config.js");
-  const api = read("js/api.js");
+  const config = read("source/js/config.js");
+  const api = read("source/js/api.js");
   if (!config.includes("AUTOZAP_START_CONFIG")) fail("config should expose AUTOZAP_START_CONFIG");
   if (!config.includes(expectedVersion)) fail("config version should be 0.3.0");
   if (!config.includes(expectedMockMode)) fail("mockMode should be false by default");
@@ -125,7 +139,7 @@ function checkConfig() {
 }
 
 function checkApiFacade() {
-  const api = read("js/api.js");
+  const api = read("source/js/api.js");
   [
     "createAnonymousSession",
     "apiGetStartSuppliers",
