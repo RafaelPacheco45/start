@@ -1082,10 +1082,32 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 22px 50px rgba(0,0,0,.26);
 }
 .visual-logo svg,
+.visual-logo img,
 .mini-logo svg {
   width: 100%;
   height: 100%;
   display: block;
+}
+.visual-logo img {
+  object-fit: cover;
+}
+.image-logo {
+  aspect-ratio: 1;
+  max-width: 360px;
+}
+.asset-status {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: .78rem;
+}
+.asset-status.success {
+  background: rgba(15, 170, 98, .16);
+  color: #bdf7d9;
+}
+.asset-status.warning {
+  background: rgba(255, 184, 77, .16);
+  color: #ffe0a8;
 }
 .mockup-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1109,6 +1131,15 @@ a { color: inherit; text-decoration: none; }
   aspect-ratio: 720 / 260;
   border-radius: 10px;
   overflow: hidden;
+}
+.mini-logo .visual-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: none;
+}
+.mini-logo .image-logo {
+  aspect-ratio: 1;
 }
 .profile-mockup {
   place-items: center;

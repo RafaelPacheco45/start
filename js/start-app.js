@@ -134,6 +134,7 @@
       identity: null,
       apiStatus: {
         identity: "",
+        image: "",
         suppliers: ""
       },
       formalization: "available",
@@ -397,9 +398,10 @@
 
   function renderPresentationVisual() {
     var identity = getIdentity();
-    var logo = ensureLogoSvg(identity);
-    return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo foi montada com nome, cores, estilo e slogan do projeto. O download do logotipo ja sai em SVG.") +
-      '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logoMarkup(logo) + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
+    var logo = brandAssetMarkup(identity);
+    var imageNote = identity.imageDataUrl ? '<small class="asset-status success">Imagem gerada pelo servidor AutoZap Start.</small>' : '<small class="asset-status warning">Imagem da API nao retornou agora. Exibindo previa SVG provisoria.</small>';
+    return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo respeita nome, estilo, produtos, mensagem e cores escolhidas no projeto.") +
+      '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logo + imageNote + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
       '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo SVG</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
       actions("Continuar projeto", true);
@@ -611,6 +613,7 @@
         fallback.apiError = response && (response.message || response.error) || "identity_generation_failed";
         project.identity = fallback;
         project.apiStatus.identity = fallback.apiError;
+        await generateVisualImage(api);
         markDone("slogan");
         recordIdentityGeneration();
         saveProject();
@@ -618,6 +621,7 @@
       }
       project.identity = normalizeApiIdentity(response);
       project.apiStatus.identity = "connected";
+      await generateVisualImage(api);
       markDone("slogan");
       recordIdentityGeneration();
       saveProject();
@@ -626,11 +630,96 @@
       fallback.apiError = error && error.message || "identity_generation_failed";
       project.identity = fallback;
       project.apiStatus.identity = fallback.apiError;
+      await generateVisualImage(api);
       markDone("slogan");
       recordIdentityGeneration();
       saveProject();
       return { fallback: true };
     }
+  }
+
+  async function generateVisualImage(api) {
+    if (!api || typeof api.generateStartImage !== "function") {
+      project.apiStatus.image = "image-client-unavailable";
+      return null;
+    }
+    var identity = project.identity || generateIdentityMock();
+    try {
+      var response = await api.generateStartImage(imagePayload(identity));
+      var image = normalizeImageResponse(response);
+      if (!image) {
+        project.apiStatus.image = response && (response.message || response.error) || "image_generation_failed";
+        return null;
+      }
+      identity.imageDataUrl = image.imageDataUrl;
+      identity.imageMimeType = image.mimeType || "image/png";
+      identity.imageModel = image.model || "";
+      identity.imageSource = "autozap-start-image-api";
+      project.identity = identity;
+      project.apiStatus.image = "connected";
+      return image;
+    } catch (error) {
+      project.apiStatus.image = error && error.message || "image_generation_failed";
+      return null;
+    }
+  }
+
+  function imagePayload(identity) {
+    var name = project.brand.name.trim() || identity.name || "SmartCell";
+    var prompt = [
+      "Crie uma imagem de logotipo profissional para uma loja de celulares chamada " + name + ".",
+      "Respeite exatamente este estilo visual: " + (project.brand.style || "moderno") + ".",
+      "Tipo de logotipo escolhido: " + (project.brand.logoStyle || "simbolo") + ".",
+      "Mensagem da marca: " + (project.brand.message || "confianca e tecnologia") + ".",
+      "Produtos vendidos: " + (project.brand.products.length ? project.brand.products.join(", ") : "celulares e acessorios") + ".",
+      "Use como paleta principal estas cores: " + project.brand.colors.join(", ") + ".",
+      "Crie um logo limpo, utilizavel em loja de celular, perfil de Instagram e site. Evite texto pequeno ilegivel."
+    ].join(" ");
+    return {
+      prompt: prompt,
+      storeName: name,
+      description: identity.slogan || project.brand.message || "Loja de celulares e acessorios",
+      style: [project.brand.style, project.brand.logoStyle, project.brand.message].filter(Boolean).join(", "),
+      colors: project.brand.colors.slice(),
+      products: project.brand.products.slice(),
+      logoStyle: project.brand.logoStyle,
+      brandMessage: project.brand.message,
+      source: "autozap-start-desktop"
+    };
+  }
+
+  function normalizeImageResponse(response) {
+    var source = findImagePayload(response);
+    if (!source) return null;
+    var imageBase64 = source.imageBase64 || source.base64 || "";
+    var dataUrl = source.imageDataUrl || source.dataUrl || "";
+    var mimeType = source.mimeType || source.type || "image/png";
+    if (!dataUrl && imageBase64) {
+      dataUrl = String(imageBase64).indexOf("data:") === 0 ? imageBase64 : "data:" + mimeType + ";base64," + imageBase64;
+    }
+    return dataUrl ? { imageDataUrl: dataUrl, mimeType: mimeType, model: source.model || "" } : null;
+  }
+
+  function findImagePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (typeof value.imageDataUrl === "string" || typeof value.dataUrl === "string" || typeof value.imageBase64 === "string" || typeof value.base64 === "string") return value;
+    if (value.data && typeof value.data === "object") {
+      var fromData = findImagePayload(value.data);
+      if (fromData) return fromData;
+    }
+    if (value.body && typeof value.body === "object") {
+      var fromBody = findImagePayload(value.body);
+      if (fromBody) return fromBody;
+    }
+    if (value.raw && typeof value.raw === "object") {
+      var fromRaw = findImagePayload(value.raw);
+      if (fromRaw) return fromRaw;
+    }
+    if (value.image && typeof value.image === "object") {
+      var fromImage = findImagePayload(value.image);
+      if (fromImage) return fromImage;
+    }
+    return null;
   }
 
   function identityPayload() {
@@ -669,8 +758,8 @@
 
   function normalizeApiIdentity(response) {
     var data = response.data && typeof response.data === "object" ? response.data : response;
-    var name = data.storeName || data.name || project.brand.name.trim() || "SmartCell";
-    var colors = Array.isArray(data.colors) && data.colors.length ? data.colors.slice(0, 3) : project.brand.colors.slice();
+    var name = project.brand.name.trim() || data.storeName || data.name || "SmartCell";
+    var colors = project.brand.colors && project.brand.colors.length ? project.brand.colors.slice(0, 3) : Array.isArray(data.colors) && data.colors.length ? data.colors.slice(0, 3) : [];
     while (colors.length < 3) colors.push(project.brand.colors[colors.length] || "#2f6bff");
     var slogan = data.slogan || project.brand.slogan || suggestedSlogans()[0];
     return {
@@ -729,8 +818,15 @@
     return '<div class="generated-logo visual-logo">' + svg + '</div>';
   }
 
-  function renderBrandMockups(identity, logo) {
-    var compactLogo = '<div class="mini-logo">' + logo + '</div>';
+  function brandAssetMarkup(identity) {
+    if (identity.imageDataUrl) {
+      return '<div class="generated-logo visual-logo image-logo"><img src="' + escapeAttr(identity.imageDataUrl) + '" alt="Logotipo gerado para ' + escapeAttr(identity.name) + '"></div>';
+    }
+    return logoMarkup(ensureLogoSvg(identity));
+  }
+
+  function renderBrandMockups(identity, logoMarkupText) {
+    var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
     return [
       '<article class="mockup-card profile-mockup">' + compactLogo + '<strong>Perfil social</strong><small>@' + escapeHtml(slugify(identity.name)) + '</small></article>',
       '<article class="mockup-card banner-mockup"><div>' + compactLogo + '<strong>' + escapeHtml(identity.slogan) + '</strong></div><small>Banner promocional</small></article>',
@@ -839,6 +935,13 @@
   function downloadProject(type) {
     var identity = getIdentity();
     if (type === "logo") {
+      if (identity.imageDataUrl) {
+        var imageLink = document.createElement("a");
+        imageLink.href = identity.imageDataUrl;
+        imageLink.download = slugify(identity.name) + "-logo.png";
+        imageLink.click();
+        return;
+      }
       var svg = ensureLogoSvg(identity);
       var logoBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       var logoUrl = URL.createObjectURL(logoBlob);
