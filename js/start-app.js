@@ -275,7 +275,7 @@
       "logo-style": renderLogoStyle,
       "brand-message": renderBrandMessage,
       "slogan": renderSlogan,
-      "presentation": renderPresentation,
+      "presentation": renderPresentationVisual,
       "formalization": renderFormalization,
       "inventory": renderInventory,
       "plans": renderPlans,
@@ -392,6 +392,16 @@
       '<div class="presentation-grid"><div class="brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '"><div class="generated-logo">' + escapeHtml(identity.logo) + '</div><h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid">' + ["Logo principal", "Perfil do Instagram", "Capa de rede social", "Cartão de visita", "Banner", "Página de loja virtual"].map(function(item) { return '<article class="mockup-card"><strong>' + item + '</strong><small>Modelo visual simulado, preparado para mockups reais.</small></article>'; }).join("") + '</div></div>' +
       '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
+      actions("Continuar projeto", true);
+  }
+
+  function renderPresentationVisual() {
+    var identity = getIdentity();
+    var logo = ensureLogoSvg(identity);
+    return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo foi montada com nome, cores, estilo e slogan do projeto. O download do logotipo ja sai em SVG.") +
+      '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logoMarkup(logo) + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
+      '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
+      '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo SVG</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
       actions("Continuar projeto", true);
   }
 
@@ -574,10 +584,11 @@
     return {
       name: name,
       logo: initials(name),
+      logoSvg: createLogoSvg(name, project.brand.colors, project.brand.slogan || suggestedSlogans()[0], project.brand.logoStyle),
       colors: project.brand.colors.slice(),
       typography: project.brand.style === "Premium" ? "Inter + serif display" : "Inter Bold",
       slogan: project.brand.slogan || suggestedSlogans()[0],
-      files: ["brand-summary.json", "logo.txt", "social-materials.txt"],
+      files: ["brand-summary.json", "logo.svg", "social-materials.json"],
       source: "local-fallback",
       mock: true
     };
@@ -661,18 +672,20 @@
     var name = data.storeName || data.name || project.brand.name.trim() || "SmartCell";
     var colors = Array.isArray(data.colors) && data.colors.length ? data.colors.slice(0, 3) : project.brand.colors.slice();
     while (colors.length < 3) colors.push(project.brand.colors[colors.length] || "#2f6bff");
+    var slogan = data.slogan || project.brand.slogan || suggestedSlogans()[0];
     return {
       name: name,
       logo: data.logo || initials(name),
+      logoSvg: data.logoSvg || createLogoSvg(name, colors, slogan, project.brand.logoStyle),
       colors: colors,
       typography: data.typography || data.font || (project.brand.style === "Premium" ? "Inter + serif display" : "Inter Bold"),
-      slogan: data.slogan || project.brand.slogan || suggestedSlogans()[0],
+      slogan: slogan,
       tone: data.tone || project.brand.message,
       instagramBio: data.instagramBio || "",
       whatsappDescription: data.whatsappDescription || "",
       googleDescription: data.googleDescription || data.googleBusinessDescription || "",
       visualSuggestions: data.visualSuggestions || [],
-      files: ["brand-summary.json", "logo.txt", "social-materials.txt"],
+      files: ["brand-summary.json", "logo.svg", "social-materials.json"],
       source: "autozap-start-api",
       apiRaw: response,
       mock: false
@@ -683,12 +696,62 @@
     return project.identity || {
       name: project.brand.name || "SmartCell",
       logo: initials(project.brand.name || "SmartCell"),
+      logoSvg: createLogoSvg(project.brand.name || "SmartCell", project.brand.colors, project.brand.slogan || "Tecnologia perto de você.", project.brand.logoStyle),
       colors: project.brand.colors,
       typography: "Inter Bold",
       slogan: project.brand.slogan || "Tecnologia perto de você.",
       files: [],
       mock: true
     };
+  }
+
+  function ensureLogoSvg(identity) {
+    if (!identity.logoSvg) {
+      identity.logoSvg = createLogoSvg(identity.name, identity.colors, identity.slogan, project.brand.logoStyle);
+    }
+    return identity.logoSvg;
+  }
+
+  function createLogoSvg(name, colors, slogan, logoStyle) {
+    var safeName = String(name || "SmartCell").trim() || "SmartCell";
+    var safeSlogan = String(slogan || "Tecnologia perto de voce").trim();
+    var initialsText = initials(safeName);
+    var palette = Array.isArray(colors) && colors.length ? colors.slice(0, 3) : ["#2f6bff", "#07133f", "#0faa62"];
+    while (palette.length < 3) palette.push(["#2f6bff", "#07133f", "#0faa62"][palette.length]);
+    var primary = sanitizeColor(palette[0], "#2f6bff");
+    var secondary = sanitizeColor(palette[1], "#07133f");
+    var accent = sanitizeColor(palette[2], "#0faa62");
+    var symbol = /emblema|s[ií]mbolo/i.test(logoStyle || "") ? '<path d="M96 54 134 76v43l-38 22-38-22V76z" fill="' + primary + '"/><path d="M96 70 120 84v28l-24 14-24-14V84z" fill="' + accent + '"/>' : '<rect x="56" y="54" width="80" height="88" rx="26" fill="' + primary + '"/><path d="M82 86h28c12 0 20 8 20 19s-8 19-20 19H82z" fill="' + accent + '"/><circle cx="79" cy="105" r="8" fill="#fff"/>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 260" role="img" aria-label="' + escapeSvg(safeName) + '"><defs><linearGradient id="azsLogoBg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="' + secondary + '"/><stop offset="1" stop-color="' + primary + '"/></linearGradient></defs><rect width="720" height="260" rx="34" fill="url(#azsLogoBg)"/><circle cx="96" cy="98" r="74" fill="rgba(255,255,255,.10)"/>' + symbol + '<text x="178" y="116" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="900" letter-spacing="0">' + escapeSvg(safeName) + '</text><text x="180" y="158" fill="rgba(255,255,255,.74)" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="0">' + escapeSvg(safeSlogan.slice(0, 58)) + '</text><text x="82" y="113" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" text-anchor="middle">' + escapeSvg(initialsText) + '</text></svg>';
+  }
+
+  function logoMarkup(svg) {
+    return '<div class="generated-logo visual-logo">' + svg + '</div>';
+  }
+
+  function renderBrandMockups(identity, logo) {
+    var compactLogo = '<div class="mini-logo">' + logo + '</div>';
+    return [
+      '<article class="mockup-card profile-mockup">' + compactLogo + '<strong>Perfil social</strong><small>@' + escapeHtml(slugify(identity.name)) + '</small></article>',
+      '<article class="mockup-card banner-mockup"><div>' + compactLogo + '<strong>' + escapeHtml(identity.slogan) + '</strong></div><small>Banner promocional</small></article>',
+      '<article class="mockup-card card-mockup">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><small>Cartao de visita</small></article>',
+      '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>'
+    ].join("");
+  }
+
+  function sanitizeColor(value, fallback) {
+    var text = String(value || "").trim();
+    return /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(text) ? text : fallback;
+  }
+
+  function escapeSvg(value) {
+    return String(value || "").replace(/[&<>"']/g, function(char) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[char];
+    });
+  }
+
+  function slugify(value) {
+    return String(value || "loja").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "").slice(0, 24) || "loja";
   }
 
   function buildStockSuggestion(reason) {
@@ -775,10 +838,21 @@
 
   function downloadProject(type) {
     var identity = getIdentity();
+    if (type === "logo") {
+      var svg = ensureLogoSvg(identity);
+      var logoBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      var logoUrl = URL.createObjectURL(logoBlob);
+      var logoLink = document.createElement("a");
+      logoLink.href = logoUrl;
+      logoLink.download = slugify(identity.name) + "-logo.svg";
+      logoLink.click();
+      URL.revokeObjectURL(logoUrl);
+      return;
+    }
     var payload = {
       type: type,
       generatedAt: new Date().toISOString(),
-      note: "Download gratuito simulado. Estrutura pronta para arquivos reais.",
+      note: type === "materials" ? "Pacote gratuito com dados da identidade e logo SVG embutida." : "Download gratuito da identidade visual.",
       brand: project.brand,
       identity: identity,
       inventory: project.inventory,
