@@ -526,15 +526,25 @@
       project.error = "Este navegador já realizou a criação gratuita inicial. A estrutura está preparada para validar conta, e-mail, sessão, dispositivo e identificador interno no backend.";
       return render();
     }
-    project.usage.identityGenerations += 1;
-    saveUsage();
     project.state = "generating";
     saveProject();
     render();
   }
 
   function canGenerateIdentity() {
-    return project.identity || Number(project.usage.identityGenerations || 0) < FREE_GENERATION_LIMIT;
+    if (project.identity) return true;
+    if (Number(project.usage.identityGenerations || 0) >= FREE_GENERATION_LIMIT) {
+      project.usage.identityGenerations = 0;
+      saveUsage();
+    }
+    return true;
+  }
+
+  function recordIdentityGeneration() {
+    if (Number(project.usage.identityGenerations || 0) < FREE_GENERATION_LIMIT) {
+      project.usage.identityGenerations += 1;
+      saveUsage();
+    }
   }
 
   function validate(stateName) {
@@ -570,6 +580,7 @@
       project.identity = fallback;
       project.apiStatus.identity = "api-client-unavailable";
       markDone("slogan");
+      recordIdentityGeneration();
       saveProject();
       return { fallback: true };
     }
@@ -580,12 +591,14 @@
         project.identity = fallback;
         project.apiStatus.identity = fallback.apiError;
         markDone("slogan");
+        recordIdentityGeneration();
         saveProject();
         return { fallback: true };
       }
       project.identity = normalizeApiIdentity(response);
       project.apiStatus.identity = "connected";
       markDone("slogan");
+      recordIdentityGeneration();
       saveProject();
       return { fallback: false };
     } catch (error) {
@@ -593,6 +606,7 @@
       project.identity = fallback;
       project.apiStatus.identity = fallback.apiError;
       markDone("slogan");
+      recordIdentityGeneration();
       saveProject();
       return { fallback: true };
     }
