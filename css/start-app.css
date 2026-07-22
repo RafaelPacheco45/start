@@ -964,18 +964,33 @@ a { color: inherit; text-decoration: none; }
   min-height: 100svh;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at 50% 40%, rgba(47, 107, 255, .28), transparent 34%),
-    linear-gradient(145deg, #020711, #07162f);
+  background: #030812;
   color: #fff;
   padding: 24px;
 }
 .generation-card {
-  width: min(100%, 720px);
+  width: min(100%, 460px);
   display: grid;
   justify-items: center;
-  gap: 22px;
+  gap: 18px;
   text-align: center;
+}
+.minimal-generation {
+  padding: 28px 18px;
+}
+.generation-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 28px rgba(47, 107, 255, .26));
+}
+.loading-ring {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(255,255,255,.14);
+  border-top-color: #5f8aff;
+  border-radius: 50%;
+  animation: spinLoader .82s linear infinite;
 }
 .brand-orbit {
   width: 148px;
@@ -999,13 +1014,17 @@ a { color: inherit; text-decoration: none; }
 }
 .generation-card h2 {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 4.4rem);
-  line-height: 1;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  line-height: 1.06;
 }
 .generation-card p {
   margin: 0;
   color: rgba(255,255,255,.70);
   font-weight: 850;
+}
+.generation-card small {
+  color: rgba(255,255,255,.48);
+  font-weight: 750;
 }
 .generation-bar {
   width: min(100%, 520px);
@@ -1021,6 +1040,9 @@ a { color: inherit; text-decoration: none; }
   border-radius: inherit;
   background: linear-gradient(90deg, #5f8aff, #0faa62);
   transition: width .42s ease;
+}
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
 }
 .presentation-grid {
   display: grid;

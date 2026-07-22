@@ -112,6 +112,7 @@
 
   var project = loadProject();
   bindLanding();
+  bindBuilderDelegation();
   prepareLanding();
 
   function defaultProject() {
@@ -185,6 +186,21 @@
       button.addEventListener("click", function() {
         startIntro();
       });
+    });
+  }
+
+  function bindBuilderDelegation() {
+    builder.addEventListener("click", function(event) {
+      var downloadButton = event.target.closest("[data-download]");
+      if (downloadButton && builder.contains(downloadButton)) {
+        event.preventDefault();
+        downloadProject(downloadButton.dataset.download);
+        return;
+      }
+      var actionButton = event.target.closest("[data-action]");
+      if (!actionButton || !builder.contains(actionButton)) return;
+      event.preventDefault();
+      handleAction(actionButton.dataset.action, event);
     });
   }
 
@@ -340,11 +356,14 @@
   }
 
   function renderGenerating() {
-    builder.innerHTML = '<section class="generation-screen"><div class="generation-card" style="--generation-progress:0%"><div class="brand-orbit"><span>' + escapeHtml(initials(project.brand.name)) + '</span></div><h2>Construindo sua identidade visual.</h2><p data-generation-message>' + generationMessages[0] + '</p><div class="generation-bar"><i></i></div><small data-generation-status>Conectando ao AutoZap Start. Imagens pesadas nao bloqueiam esta etapa.</small></div></section>';
+    landing.hidden = true;
+    builder.hidden = false;
+    intro.hidden = true;
+    shell.dataset.mode = "builder";
+    builder.innerHTML = '<section class="generation-screen"><div class="generation-card minimal-generation"><img class="generation-logo" src="./assets/autozap-logo-mark.png" alt="AutoZap"><span class="loading-ring" aria-hidden="true"></span><h2>Gerando identidade</h2><p data-generation-message>' + generationMessages[0] + '</p><small data-generation-status>Conectando ao AutoZap Start.</small></div></section>';
     var index = 0;
     var apiFinished = false;
     var finishedWithFallback = false;
-    var card = builder.querySelector(".generation-card");
     var message = builder.querySelector("[data-generation-message]");
     var status = builder.querySelector("[data-generation-status]");
     generateIdentityReal().then(function(result) {
@@ -358,7 +377,6 @@
     });
     var timer = setInterval(function() {
       index = Math.min(generationMessages.length, index + 1);
-      card.style.setProperty("--generation-progress", Math.min(apiFinished ? 100 : 92, Math.round((index / generationMessages.length) * 100)) + "%");
       message.textContent = generationMessages[Math.min(generationMessages.length - 1, index)];
       if (apiFinished && index >= generationMessages.length) {
         clearInterval(timer);
@@ -472,14 +490,6 @@
         project.selectedPlan = button.dataset.plan;
         saveProject();
         render();
-      });
-    });
-    builder.querySelectorAll("[data-download]").forEach(function(button) {
-      button.addEventListener("click", function() { downloadProject(button.dataset.download); });
-    });
-    builder.querySelectorAll("[data-action]").forEach(function(button) {
-      button.addEventListener("click", function(event) {
-        handleAction(button.dataset.action, event);
       });
     });
   }
