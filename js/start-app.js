@@ -37,17 +37,17 @@
     "Montando a paleta de cores.",
     "Gerando o logotipo.",
     "Preparando seus materiais.",
-    "Criando a apresentacao da sua loja.",
+    "Criando a apresentação da sua loja.",
     "Finalizando sua identidade visual."
   ];
 
   var styleOptions = [
     ["Moderna", "Visual limpo, digital e direto."],
-    ["Premium", "Aparencia sofisticada e segura."],
-    ["Tecnologica", "Energia inovadora para aparelhos e acessorios."],
+    ["Premium", "Aparência sofisticada e segura."],
+    ["Tecnológica", "Energia inovadora para aparelhos e acessórios."],
     ["Minimalista", "Poucos elementos, alto contraste e clareza."],
     ["Jovem", "Marca viva para redes sociais e ofertas."],
-    ["Popular", "Proxima, simples e focada em preco."],
+    ["Popular", "Próxima, simples e focada em preço."],
     ["Elegante", "Tom refinado para atendimento consultivo."],
     ["Urbana", "Estilo forte para loja de rua e bairro."]
   ];
@@ -55,50 +55,50 @@
   var productOptions = [
     "Smartphones novos",
     "Smartphones usados",
-    "Acessorios",
-    "Peliculas",
+    "Acessórios",
+    "Películas",
     "Capas",
     "Carregadores",
     "Fones",
-    "Assistencia tecnica"
+    "Assistência técnica"
   ];
 
   var paletteOptions = [
-    { name: "Azul confianca", colors: ["#2f6bff", "#07133f", "#0faa62"] },
+    { name: "Azul confiança", colors: ["#2f6bff", "#07133f", "#0faa62"] },
     { name: "Preto premium", colors: ["#111827", "#3b82f6", "#f8fafc"] },
     { name: "Verde crescimento", colors: ["#0faa62", "#052e22", "#60a5fa"] },
     { name: "Urbana", colors: ["#2563eb", "#0f172a", "#f97316"] }
   ];
 
-  var logoStyles = ["Simbolo", "Monograma", "Nome completo", "Icone tecnologico", "Minimalista", "Emblema"];
-  var messageOptions = ["Confianca", "Tecnologia", "Preco baixo", "Exclusividade", "Rapidez", "Proximidade", "Modernidade"];
-  var investmentOptions = ["Ate R$ 500", "Ate R$ 1.000", "Ate R$ 2.500", "Ate R$ 5.000", "Valor personalizado"];
+  var logoStyles = ["Símbolo", "Monograma", "Nome completo", "Ícone tecnológico", "Minimalista", "Emblema"];
+  var messageOptions = ["Confiança", "Tecnologia", "Preço baixo", "Exclusividade", "Rapidez", "Proximidade", "Modernidade"];
+  var investmentOptions = ["Até R$ 500", "Até R$ 1.000", "Até R$ 2.500", "Até R$ 5.000", "Valor personalizado"];
   var planConfig = [
     {
       id: "store",
       name: "Loja",
-      priceLabel: "Preco configuravel",
+      priceLabel: "Preço configurável",
       description: "Loja virtual para apresentar produtos e receber interessados.",
-      benefits: ["Vitrine de produtos", "Pagina responsiva", "CTA de atendimento"],
+      benefits: ["Vitrine de produtos", "Página responsiva", "CTA de atendimento"],
       cta: "Selecionar Loja",
       available: true
     },
     {
       id: "presence",
-      name: "Presenca",
-      priceLabel: "Preco configuravel",
+      name: "Presença",
+      priceLabel: "Preço configurável",
       description: "Loja virtual com site institucional para fortalecer a marca.",
-      benefits: ["Loja virtual", "Site portfolio", "Pagina sobre a loja"],
-      cta: "Selecionar Presenca",
+      benefits: ["Loja virtual", "Site portfólio", "Página sobre a loja"],
+      cta: "Selecionar Presença",
       available: true,
       highlight: true
     },
     {
       id: "complete",
-      name: "Negocio Completo",
-      priceLabel: "Preco configuravel",
-      description: "Pacote com presenca online e um mes do plano basico AutoZap incluido.",
-      benefits: ["Loja virtual", "Site institucional", "1 mes de AutoZap basico"],
+      name: "Negócio Completo",
+      priceLabel: "Preço configurável",
+      description: "Pacote com presença online e um mês do plano básico AutoZap incluído.",
+      benefits: ["Loja virtual", "Site institucional", "1 mês de AutoZap básico"],
       cta: "Selecionar pacote",
       available: true
     }
@@ -277,65 +277,65 @@
 
   function renderBrandName() {
     var suggestions = suggestedNames();
-    return header("Identidade visual gratuita", "Qual sera o nome da sua loja?", "Digite um nome ou escolha uma sugestao. Voce podera corrigir antes da geracao final.", true) +
+    return header("Identidade visual gratuita", "Qual será o nome da sua loja?", "Digite um nome ou escolha uma sugestão. Você poderá corrigir antes da geração final.", true) +
       '<div class="field-stack"><label>Nome da loja<input data-field="brand.name" value="' + escapeAttr(project.brand.name) + '" placeholder="Ex: SmartCell"></label></div>' +
       '<div class="suggestion-row">' + suggestions.map(function(name) { return '<button class="chip" type="button" data-set-name="' + escapeAttr(name) + '">' + escapeHtml(name) + '</button>'; }).join("") + '</div>' +
-      '<button class="ghost-action" type="button" data-action="new-suggestions">Gerar novas sugestoes</button>' +
+      '<button class="ghost-action" type="button" data-action="new-suggestions">Gerar novas sugestões</button>' +
       errorBox() +
       actions("Continuar", false);
   }
 
   function renderCity() {
-    return header("Localizacao", "Em qual cidade sua loja vai atuar?", "Essa informacao ajuda a adaptar textos, apresentacao e estrategia local.", true) +
-      '<div class="field-stack"><label>Cidade<input data-field="brand.city" value="' + escapeAttr(project.brand.city) + '" placeholder="Ex: Sao Paulo"></label><label>Estado<select data-field="brand.uf">' + options(["", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"], project.brand.uf, "Selecione") + '</select></label></div>' +
+    return header("Localização", "Em qual cidade sua loja vai atuar?", "Essa informação ajuda a adaptar textos, apresentação e estratégia local.", true) +
+      '<div class="field-stack"><label>Cidade<input data-field="brand.city" value="' + escapeAttr(project.brand.city) + '" placeholder="Ex: São Paulo"></label><label>Estado<select data-field="brand.uf">' + options(["", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"], project.brand.uf, "Selecione") + '</select></label></div>' +
       errorBox() +
       actions("Continuar", true);
   }
 
   function renderStyle() {
-    return header("Estilo", "Como voce imagina sua loja?", "Escolha uma direcao visual. Essa escolha guia logo, cores, linguagem e mockups.") +
+    return header("Estilo", "Como você imagina sua loja?", "Escolha uma direção visual. Essa escolha guia logo, cores, linguagem e mockups.") +
       '<div class="option-grid">' + styleOptions.map(function(item) { return optionCard("brand.style", item[0], item[1], project.brand.style === item[0]); }).join("") + '</div>' +
       errorBox() +
       actions("Continuar", true);
   }
 
   function renderProducts() {
-    return header("Produtos", "Quais produtos voce pretende vender?", "Selecione tudo que fizer sentido para o primeiro momento da loja.") +
+    return header("Produtos", "Quais produtos você pretende vender?", "Selecione tudo que fizer sentido para o primeiro momento da loja.") +
       '<div class="option-grid">' + productOptions.map(function(item) { return optionCard("brand.products", item, "Selecionar categoria", project.brand.products.indexOf(item) >= 0, true); }).join("") + '</div>' +
       errorBox() +
       actions("Continuar", true);
   }
 
   function renderColors() {
-    return header("Cores", "Escolha as cores da sua marca.", "Use uma paleta pronta ou ajuste manualmente cor principal, secundaria e destaque.") +
-      '<div class="palette-grid">' + paletteOptions.map(function(palette, index) { return '<button class="palette-card ' + (samePalette(project.brand.colors, palette.colors) ? "active" : "") + '" type="button" data-palette="' + index + '"><div class="swatches">' + palette.colors.map(swatch).join("") + '</div><strong>' + escapeHtml(palette.name) + '</strong><small>Paleta configuravel para a identidade.</small></button>'; }).join("") + '</div>' +
-      '<div class="color-controls"><label>Principal<input type="color" data-color-index="0" value="' + escapeAttr(project.brand.colors[0]) + '"></label><label>Secundaria<input type="color" data-color-index="1" value="' + escapeAttr(project.brand.colors[1]) + '"></label><label>Destaque<input type="color" data-color-index="2" value="' + escapeAttr(project.brand.colors[2]) + '"></label></div>' +
+    return header("Cores", "Escolha as cores da sua marca.", "Use uma paleta pronta ou ajuste manualmente cor principal, secundária e destaque.") +
+      '<div class="palette-grid">' + paletteOptions.map(function(palette, index) { return '<button class="palette-card ' + (samePalette(project.brand.colors, palette.colors) ? "active" : "") + '" type="button" data-palette="' + index + '"><div class="swatches">' + palette.colors.map(swatch).join("") + '</div><strong>' + escapeHtml(palette.name) + '</strong><small>Paleta configurável para a identidade.</small></button>'; }).join("") + '</div>' +
+      '<div class="color-controls"><label>Principal<input type="color" data-color-index="0" value="' + escapeAttr(project.brand.colors[0]) + '"></label><label>Secundária<input type="color" data-color-index="1" value="' + escapeAttr(project.brand.colors[1]) + '"></label><label>Destaque<input type="color" data-color-index="2" value="' + escapeAttr(project.brand.colors[2]) + '"></label></div>' +
       actions("Continuar", true);
   }
 
   function renderLogoStyle() {
-    return header("Logotipo", "Qual estilo de logotipo voce prefere?", "Essa escolha define a versao principal e a versao reduzida da marca.") +
+    return header("Logotipo", "Qual estilo de logotipo você prefere?", "Essa escolha define a versão principal e a versão reduzida da marca.") +
       '<div class="option-grid">' + logoStyles.map(function(item) { return optionCard("brand.logoStyle", item, "Estilo de logo", project.brand.logoStyle === item); }).join("") + '</div>' +
       errorBox() +
       actions("Continuar", true);
   }
 
   function renderBrandMessage() {
-    return header("Mensagem", "Qual mensagem sua marca deve transmitir?", "Escolha a percepcao principal que o cliente deve sentir ao ver sua loja.") +
-      '<div class="option-grid">' + messageOptions.map(function(item) { return optionCard("brand.message", item, "Tom de comunicacao", project.brand.message === item); }).join("") + '</div>' +
+    return header("Mensagem", "Qual mensagem sua marca deve transmitir?", "Escolha a percepção principal que o cliente deve sentir ao ver sua loja.") +
+      '<div class="option-grid">' + messageOptions.map(function(item) { return optionCard("brand.message", item, "Tom de comunicação", project.brand.message === item); }).join("") + '</div>' +
       errorBox() +
       actions("Continuar", true);
   }
 
   function renderSlogan() {
-    return header("Slogan", "Quer adicionar um slogan?", "Digite o seu, escolha uma sugestao ou pule. O download continua gratuito.", true) +
-      '<div class="field-stack"><label>Slogan<input data-field="brand.slogan" value="' + escapeAttr(project.brand.slogan) + '" placeholder="Ex: Tecnologia perto de voce"></label></div>' +
+    return header("Slogan", "Quer adicionar um slogan?", "Digite o seu, escolha uma sugestão ou pule. O download continua gratuito.", true) +
+      '<div class="field-stack"><label>Slogan<input data-field="brand.slogan" value="' + escapeAttr(project.brand.slogan) + '" placeholder="Ex: Tecnologia perto de você"></label></div>' +
       '<div class="suggestion-row">' + suggestedSlogans().map(function(text) { return '<button class="chip" type="button" data-set-slogan="' + escapeAttr(text) + '">' + escapeHtml(text) + '</button>'; }).join("") + '</div>' +
       '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-slogan">Pular</button><button class="builder-primary" type="button" data-action="generate">Gerar identidade</button></div></section>';
   }
 
   function renderGenerating() {
-    builder.innerHTML = '<section class="generation-screen"><div class="generation-card" style="--generation-progress:0%"><div class="brand-orbit"><span>' + escapeHtml(initials(project.brand.name)) + '</span></div><h2>Construindo sua identidade visual.</h2><p data-generation-message>' + generationMessages[0] + '</p><div class="generation-bar"><i></i></div><small>Mock visual inicial. Pronto para substituir por geracao real quando a API estiver disponivel.</small></div></section>';
+    builder.innerHTML = '<section class="generation-screen"><div class="generation-card" style="--generation-progress:0%"><div class="brand-orbit"><span>' + escapeHtml(initials(project.brand.name)) + '</span></div><h2>Construindo sua identidade visual.</h2><p data-generation-message>' + generationMessages[0] + '</p><div class="generation-bar"><i></i></div><small>Mock visual inicial. Pronto para substituir por geração real quando a API estiver disponível.</small></div></section>';
     var index = 0;
     var card = builder.querySelector(".generation-card");
     var message = builder.querySelector("[data-generation-message]");
@@ -353,46 +353,46 @@
 
   function renderPresentation() {
     var identity = getIdentity();
-    return header("Identidade pronta", "Sua identidade visual esta pronta.", "Veja a marca aplicada em contextos diferentes. Os downloads abaixo sao gratuitos.") +
+    return header("Identidade pronta", "Sua identidade visual está pronta.", "Veja a marca aplicada em contextos diferentes. Os downloads abaixo são gratuitos.") +
       '<div class="presentation-grid"><div class="brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '"><div class="generated-logo">' + escapeHtml(identity.logo) + '</div><h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
-      '<div class="mockup-grid">' + ["Logo principal", "Perfil do Instagram", "Capa de rede social", "Cartao de visita", "Banner", "Pagina de loja virtual"].map(function(item) { return '<article class="mockup-card"><strong>' + item + '</strong><small>Modelo visual simulado, preparado para mockups reais.</small></article>'; }).join("") + '</div></div>' +
+      '<div class="mockup-grid">' + ["Logo principal", "Perfil do Instagram", "Capa de rede social", "Cartão de visita", "Banner", "Página de loja virtual"].map(function(item) { return '<article class="mockup-card"><strong>' + item + '</strong><small>Modelo visual simulado, preparado para mockups reais.</small></article>'; }).join("") + '</div></div>' +
       '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
       actions("Continuar projeto", true);
   }
 
   function renderFormalization() {
-    return header("Etapa opcional", "Quer deixar sua loja pronta para crescer?", "Entenda o MEI de forma simples. A abertura e opcional, gratuita pelo Governo Federal e nao e feita pelo AutoZap.") +
-      '<article class="formalization-card"><span class="status-pill">Opcional</span><p>O MEI pode ajudar com CNPJ, emissao de nota fiscal, acesso a fornecedores, organizacao financeira e credibilidade comercial. Consulte as regras oficiais antes de abrir.</p><div class="builder-actions"><button class="builder-secondary" type="button" data-action="mei-info">Entender como funciona</button><a class="builder-primary" href="' + GOV_MEI_URL + '" target="_blank" rel="noreferrer">Abrir meu MEI</a><button class="builder-secondary" type="button" data-action="skip-formalization">Pular esta etapa</button></div></article>' +
+    return header("Etapa opcional", "Quer deixar sua loja pronta para crescer?", "Entenda o MEI de forma simples. A abertura é opcional, gratuita pelo Governo Federal e não é feita pelo AutoZap.") +
+      '<article class="formalization-card"><span class="status-pill">Opcional</span><p>O MEI pode ajudar com CNPJ, emissão de nota fiscal, acesso a fornecedores, organização financeira e credibilidade comercial. Consulte as regras oficiais antes de abrir.</p><div class="builder-actions"><button class="builder-secondary" type="button" data-action="mei-info">Entender como funciona</button><a class="builder-primary" href="' + GOV_MEI_URL + '" target="_blank" rel="noreferrer">Abrir meu MEI</a><button class="builder-secondary" type="button" data-action="skip-formalization">Pular esta etapa</button></div></article>' +
       actions("Continuar para estoque", true);
   }
 
   function renderInventory() {
-    return header("Primeiro estoque", "Monte uma sugestao inicial de pedido.", "Este modulo esta preparado para integracao com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
-      '<div class="inventory-card"><label>Quanto pretende investir?<select data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></label><div class="chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div><label>Endereco para entrega futura<textarea data-field="inventory.address" placeholder="Informe depois ou deixe observacoes iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></label><button class="ghost-action" type="button" data-action="mock-stock">Gerar sugestao mockada</button>' + inventorySuggestion() + '<p class="helper-note">Mock identificado: fornecedores, itens e pedidos serao conectados ao Portal do Fornecedor quando a integracao real estiver disponivel.</p></div>' +
+    return header("Primeiro estoque", "Monte uma sugestão inicial de pedido.", "Este módulo está preparado para integração com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
+      '<div class="inventory-card"><label>Quanto pretende investir?<select data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></label><div class="chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div><label>Endereço para entrega futura<textarea data-field="inventory.address" placeholder="Informe depois ou deixe observações iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></label><button class="ghost-action" type="button" data-action="mock-stock">Gerar sugestão mockada</button>' + inventorySuggestion() + '<p class="helper-note">Mock identificado: fornecedores, itens e pedidos serão conectados ao Portal do Fornecedor quando a integração real estiver disponível.</p></div>' +
       actions("Continuar", true);
   }
 
   function renderPlans() {
-    return header("Presenca online", "Voce tem interesse em criar sua presenca online?", "Produtos digitais opcionais, configuraveis e de compra unica. Sem preco fixo no codigo.") +
+    return header("Presença online", "Você tem interesse em criar sua presença online?", "Produtos digitais opcionais, configuráveis e de compra única. Sem preço fixo no código.") +
       '<div class="plan-grid">' + planConfig.map(function(plan) { return '<article class="plan-card ' + (plan.highlight ? "highlight" : "") + '"><span class="status-pill">' + escapeHtml(plan.priceLabel) + '</span><strong>' + escapeHtml(plan.name) + '</strong><small>' + escapeHtml(plan.description) + '</small><ul>' + plan.benefits.map(function(benefit) { return '<li>' + escapeHtml(benefit) + '</li>'; }).join("") + '</ul><button class="builder-secondary" type="button" data-plan="' + escapeAttr(plan.id) + '">' + escapeHtml(plan.cta) + '</button></article>'; }).join("") + '</div>' +
       '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-plans">Pular</button><button class="builder-primary" type="button" data-action="next">Continuar</button></div></section>';
   }
 
   function renderAutoZap() {
-    return header("Ecossistema AutoZap", "Agora que voce entrou para esse mercado, conheca a plataforma criada para ajudar sua loja a crescer.", "O AutoZap pode ajudar com atendimento, clientes, vendas, automacao, marketing, catalogo, rotina comercial e inteligencia artificial.") +
-      '<article class="autozap-card"><span class="status-pill">Proximo passo opcional</span><p>O AutoZap aparece aqui somente depois da criacao da base da loja. A prioridade do Start e ajudar voce a comecar.</p><div class="builder-actions"><a class="builder-primary" href="' + AUTOZAP_URL + '" target="_blank" rel="noreferrer">Conhecer o AutoZap</a></div></article>' +
+    return header("Ecossistema AutoZap", "Agora que você entrou para esse mercado, conheça a plataforma criada para ajudar sua loja a crescer.", "O AutoZap pode ajudar com atendimento, clientes, vendas, automação, marketing, catálogo, rotina comercial e inteligência artificial.") +
+      '<article class="autozap-card"><span class="status-pill">Próximo passo opcional</span><p>O AutoZap aparece aqui somente depois da criação da base da loja. A prioridade do Start é ajudar você a começar.</p><div class="builder-actions"><a class="builder-primary" href="' + AUTOZAP_URL + '" target="_blank" rel="noreferrer">Conhecer o AutoZap</a></div></article>' +
       actions("Finalizar", true);
   }
 
   function renderCompleted() {
     var items = [
       ["Identidade visual criada", "done"],
-      ["Formalizacao analisada", project.skipped.formalization ? "skipped" : "available"],
+      ["Formalização analisada", project.skipped.formalization ? "skipped" : "available"],
       ["Estoque montado", project.inventory.suggestion ? "done" : "available"],
-      ["Presenca online analisada", project.skipped.plans ? "skipped" : "available"],
+      ["Presença online analisada", project.skipped.plans ? "skipped" : "available"],
       ["AutoZap apresentado", "done"]
     ];
-    return header("Concluido", "Sua loja comecou aqui.", "Voce pode baixar seus materiais, revisar o projeto ou continuar depois.") +
+    return header("Concluído", "Sua loja começou aqui.", "Você pode baixar seus materiais, revisar o projeto ou continuar depois.") +
       '<div class="timeline-grid">' + items.map(function(item) { return '<article class="timeline-card" data-status="' + item[1] + '"><strong>' + escapeHtml(item[0]) + '</strong><small>' + statusLabel(item[1]) + '</small></article>'; }).join("") + '</div>' +
       '<div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-action="review">Ver meu projeto</button><button class="builder-secondary" type="button" data-action="save-exit">Continuar depois</button><a class="builder-secondary" href="' + AUTOZAP_URL + '" target="_blank" rel="noreferrer">Conhecer o AutoZap</a></div></section>';
   }
@@ -505,7 +505,7 @@
   function startGeneration() {
     if (!validate("slogan")) return render();
     if (!canGenerateIdentity()) {
-      project.error = "Este navegador ja realizou a criacao gratuita inicial. A estrutura esta preparada para validar conta, e-mail, sessao, dispositivo e identificador interno no backend.";
+      project.error = "Este navegador já realizou a criação gratuita inicial. A estrutura está preparada para validar conta, e-mail, sessão, dispositivo e identificador interno no backend.";
       return render();
     }
     project.usage.identityGenerations += 1;
@@ -552,7 +552,7 @@
       logo: initials(project.brand.name || "SmartCell"),
       colors: project.brand.colors,
       typography: "Inter Bold",
-      slogan: project.brand.slogan || "Tecnologia perto de voce.",
+      slogan: project.brand.slogan || "Tecnologia perto de você.",
       files: [],
       mock: true
     };
@@ -561,7 +561,7 @@
   function buildStockSuggestion() {
     return {
       orderId: "AZS-" + Date.now().toString(36).toUpperCase(),
-      supplier: "Fornecedor parceiro configuravel",
+      supplier: "Fornecedor parceiro configurável",
       items: (project.inventory.categories.length ? project.inventory.categories : project.brand.products).slice(0, 5).map(function(category, index) {
         return { category: category, quantity: (index + 1) * 6 };
       }),
@@ -607,12 +607,12 @@
   }
 
   function suggestedSlogans() {
-    var city = project.brand.city || "voce";
+    var city = project.brand.city || "você";
     return [
       "Tecnologia perto de " + city + ".",
-      "Seu celular em boas maos.",
-      "Acessorios e atendimento sem complicacao.",
-      "Conectando voce ao que importa."
+      "Seu celular em boas mãos.",
+      "Acessórios e atendimento sem complicação.",
+      "Conectando você ao que importa."
     ];
   }
 
@@ -627,7 +627,7 @@
       "brand-message": "Mensagem",
       "slogan": "Slogan",
       "presentation": "Identidade pronta",
-      "formalization": "Formalizacao opcional",
+      "formalization": "Formalização opcional",
       "inventory": "Estoque",
       "plans": "Produtos digitais",
       "autozap": "AutoZap",
@@ -637,7 +637,7 @@
   }
 
   function statusLabel(status) {
-    return { done: "Concluido", skipped: "Ignorado", available: "Disponivel" }[status] || "Pendente";
+    return { done: "Concluído", skipped: "Ignorado", available: "Disponível" }[status] || "Pendente";
   }
 
   function markDone(stateName) {
