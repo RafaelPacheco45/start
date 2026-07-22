@@ -52,7 +52,7 @@
         var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua);
         var touchTablet = navigator.maxTouchPoints > 1 && width <= 1024;
         var page = width <= 768 || mobileUA || touchTablet ? "mobile.html" : "desktop.html";
-        var version = "start-sequence-1";
+        var version = "start-polish-1";
         var params = new URLSearchParams(window.location.search);
         params.set("v", version);
         window.location.replace("./" + page + "?" + params.toString() + window.location.hash);

@@ -8,7 +8,7 @@
     <link rel="shortcut icon" type="image/png" href="./favicon.png">
     <link rel="apple-touch-icon" href="./favicon.png">
     <link rel="stylesheet" href="./css/theme.css">
-    <link rel="stylesheet" href="./css/desktop.css?v=start-sequence-1">
+    <link rel="stylesheet" href="./css/desktop.css?v=start-polish-1">
   </head>
   <body>
     <header class="start-landing" id="top">
@@ -26,7 +26,7 @@
         </div>
         <div class="landing-actions">
           <a class="nav-login" href="./admin.html">Entrar</a>
-          <a class="nav-primary" href="#startBuilder">Comecar agora</a>
+          <a class="nav-primary" href="#templates">Comecar agora</a>
         </div>
       </nav>
 
@@ -41,7 +41,7 @@
             <li>Preview da loja antes de publicar</li>
           </ul>
           <div class="hero-actions">
-            <a class="hero-primary" href="#startBuilder">Comecar meu projeto</a>
+            <a class="hero-primary" href="#templates">Comecar meu projeto</a>
             <a class="hero-secondary" href="#templates">Ver templates</a>
           </div>
           <div class="hero-notes" aria-label="Beneficios">
@@ -116,7 +116,7 @@
         </div>
 
         <article class="sequence-panel" id="sequencePanel" role="tabpanel" aria-labelledby="sequenceTab1">
-          <div>
+          <div class="sequence-copy">
             <span id="sequenceKicker">Etapa 01</span>
             <h3 id="sequenceTitle">Identidade visual</h3>
             <p id="sequenceDescription">Defina nome, logo, paleta, slogan e textos iniciais para deixar a loja pronta para se apresentar.</p>
@@ -126,6 +126,14 @@
             <li>Logo e cores principais</li>
             <li>Bio e mensagem comercial</li>
           </ul>
+          <div class="sequence-preview-card" aria-hidden="true">
+            <div class="sequence-device">
+              <span id="sequencePreviewLabel">Marca</span>
+              <strong id="sequencePreviewTitle">SmartCell</strong>
+              <div class="sequence-swatch-row"><i></i><i></i><i></i></div>
+              <small id="sequencePreviewText">Logo, cores e mensagem prontos para virar loja.</small>
+            </div>
+          </div>
           <div class="sequence-actions">
             <button id="sequenceBack" class="sequence-secondary" type="button" disabled>Voltar</button>
             <button id="sequenceNext" class="sequence-primary" type="button">Proxima etapa</button>
@@ -222,22 +230,34 @@
           {
             title: "Identidade visual",
             description: "Defina nome, logo, paleta, slogan e textos iniciais para deixar a loja pronta para se apresentar.",
-            items: ["Nome e posicionamento da loja", "Logo e cores principais", "Bio e mensagem comercial"]
+            items: ["Nome e posicionamento da loja", "Logo e cores principais", "Bio e mensagem comercial"],
+            label: "Marca",
+            previewTitle: "SmartCell",
+            previewText: "Logo, cores e mensagem prontos para virar loja."
           },
           {
             title: "Preview da loja",
             description: "Veja uma simulacao da vitrine digital em desktop e celular antes de seguir para os ajustes finais.",
-            items: ["Vitrine com destaque principal", "Categorias e chamadas comerciais", "Visual responsivo para celular"]
+            items: ["Vitrine com destaque principal", "Categorias e chamadas comerciais", "Visual responsivo para celular"],
+            label: "Preview",
+            previewTitle: "Vitrine pronta",
+            previewText: "Desktop e celular com a mesma identidade."
           },
           {
             title: "Estoque inicial",
             description: "Organize fornecedores, produtos e investimento estimado para iniciar a operacao com clareza.",
-            items: ["Fornecedor recomendado", "Produtos selecionados", "Total estimado do pedido"]
+            items: ["Fornecedor recomendado", "Produtos selecionados", "Total estimado do pedido"],
+            label: "Estoque",
+            previewTitle: "Pedido inicial",
+            previewText: "Itens, fornecedores e total em uma visao simples."
           },
           {
             title: "Publicacao",
             description: "Revise a identidade, o atendimento e os produtos antes de continuar para o AutoZap principal.",
-            items: ["Resumo da loja", "Contato do responsavel", "Envio para continuar no AutoZap"]
+            items: ["Resumo da loja", "Contato do responsavel", "Envio para continuar no AutoZap"],
+            label: "Final",
+            previewTitle: "Loja validada",
+            previewText: "Tudo pronto para seguir para o AutoZap."
           }
         ];
         var active = 0;
@@ -247,6 +267,9 @@
         var title = document.querySelector("#sequenceTitle");
         var description = document.querySelector("#sequenceDescription");
         var list = document.querySelector("#sequenceList");
+        var previewLabel = document.querySelector("#sequencePreviewLabel");
+        var previewTitle = document.querySelector("#sequencePreviewTitle");
+        var previewText = document.querySelector("#sequencePreviewText");
         var back = document.querySelector("#sequenceBack");
         var next = document.querySelector("#sequenceNext");
         function render(index) {
@@ -263,6 +286,9 @@
           title.textContent = step.title;
           description.textContent = step.description;
           list.innerHTML = step.items.map(function(item) { return "<li>" + item + "</li>"; }).join("");
+          previewLabel.textContent = step.label;
+          previewTitle.textContent = step.previewTitle;
+          previewText.textContent = step.previewText;
           back.disabled = active === 0;
           next.textContent = active === steps.length - 1 ? "Abrir construtor" : "Proxima etapa";
         }
