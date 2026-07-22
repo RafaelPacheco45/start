@@ -131,13 +131,18 @@
         slogan: ""
       },
       identity: null,
+      apiStatus: {
+        identity: "",
+        suppliers: ""
+      },
       formalization: "available",
       inventory: {
         investment: "",
         categories: [],
         address: "",
         notes: "",
-        suggestion: null
+        suggestion: null,
+        loading: false
       },
       selectedPlan: "",
       usage: loadUsage(),
@@ -335,17 +340,29 @@
   }
 
   function renderGenerating() {
-    builder.innerHTML = '<section class="generation-screen"><div class="generation-card" style="--generation-progress:0%"><div class="brand-orbit"><span>' + escapeHtml(initials(project.brand.name)) + '</span></div><h2>Construindo sua identidade visual.</h2><p data-generation-message>' + generationMessages[0] + '</p><div class="generation-bar"><i></i></div><small>Mock visual inicial. Pronto para substituir por geração real quando a API estiver disponível.</small></div></section>';
+    builder.innerHTML = '<section class="generation-screen"><div class="generation-card" style="--generation-progress:0%"><div class="brand-orbit"><span>' + escapeHtml(initials(project.brand.name)) + '</span></div><h2>Construindo sua identidade visual.</h2><p data-generation-message>' + generationMessages[0] + '</p><div class="generation-bar"><i></i></div><small data-generation-status>Conectando ao AutoZap Start. Imagens pesadas nao bloqueiam esta etapa.</small></div></section>';
     var index = 0;
+    var apiFinished = false;
+    var finishedWithFallback = false;
     var card = builder.querySelector(".generation-card");
     var message = builder.querySelector("[data-generation-message]");
+    var status = builder.querySelector("[data-generation-status]");
+    generateIdentityReal().then(function(result) {
+      apiFinished = true;
+      finishedWithFallback = Boolean(result && result.fallback);
+      status.textContent = finishedWithFallback ? "API indisponivel agora. Uma versao local identificada foi preparada." : "Identidade criada pela API do AutoZap Start.";
+    }).catch(function() {
+      apiFinished = true;
+      finishedWithFallback = true;
+      status.textContent = "API indisponivel agora. Uma versao local identificada foi preparada.";
+    });
     var timer = setInterval(function() {
-      index += 1;
-      card.style.setProperty("--generation-progress", Math.min(100, Math.round((index / generationMessages.length) * 100)) + "%");
+      index = Math.min(generationMessages.length, index + 1);
+      card.style.setProperty("--generation-progress", Math.min(apiFinished ? 100 : 92, Math.round((index / generationMessages.length) * 100)) + "%");
       message.textContent = generationMessages[Math.min(generationMessages.length - 1, index)];
-      if (index >= generationMessages.length) {
+      if (apiFinished && index >= generationMessages.length) {
         clearInterval(timer);
-        generateIdentityMock();
+        if (finishedWithFallback) project.apiStatus.identity = "fallback";
         goTo("presentation");
       }
     }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 80 : 620);
@@ -367,8 +384,9 @@
   }
 
   function renderInventory() {
-    return header("Primeiro estoque", "Monte uma sugestão inicial de pedido.", "Este módulo está preparado para integração com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
-      '<div class="inventory-card"><label>Quanto pretende investir?<select data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></label><div class="chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div><label>Endereço para entrega futura<textarea data-field="inventory.address" placeholder="Informe depois ou deixe observações iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></label><button class="ghost-action" type="button" data-action="mock-stock">Gerar sugestão mockada</button>' + inventorySuggestion() + '<p class="helper-note">Mock identificado: fornecedores, itens e pedidos serão conectados ao Portal do Fornecedor quando a integração real estiver disponível.</p></div>' +
+    var stockButtonLabel = project.inventory.loading ? "Consultando fornecedores..." : "Gerar sugest\u00e3o de estoque";
+    return header("Primeiro estoque", "Monte uma sugest\u00e3o inicial de pedido.", "Este m\u00f3dulo est\u00e1 preparado para integra\u00e7\u00e3o com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
+      '<div class="inventory-card"><label>Quanto pretende investir?<select data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></label><div class="chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div><label>Endere\u00e7o para entrega futura<textarea data-field="inventory.address" placeholder="Informe depois ou deixe observa\u00e7\u00f5es iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></label><button class="ghost-action" type="button" data-action="generate-stock" ' + (project.inventory.loading ? "disabled" : "") + '>' + escapeHtml(stockButtonLabel) + '</button>' + inventorySuggestion() + '<p class="helper-note">Este bloco consulta o Portal do Fornecedor pela API do AutoZap Start. Se ainda n\u00e3o houver fornecedor cadastrado, o pedido fica preparado para cota\u00e7\u00e3o futura sem inventar fornecedor.</p></div>' +
       actions("Continuar", true);
   }
 
@@ -474,7 +492,7 @@
     if (action === "new-suggestions") return render();
     if (action === "skip-formalization") { project.skipped.formalization = true; return goTo("inventory"); }
     if (action === "skip-plans") { project.skipped.plans = true; return goTo("autozap"); }
-    if (action === "mock-stock") { project.inventory.suggestion = buildStockSuggestion(); saveProject(); return render(); }
+    if (action === "generate-stock") return generateStockSuggestion();
     if (action === "mei-info") { window.open(GOV_MEI_URL, "_blank", "noreferrer"); return; }
     if (action === "review") return goTo("presentation");
     if (action === "save-exit") {
@@ -533,17 +551,108 @@
 
   function generateIdentityMock() {
     var name = project.brand.name.trim() || "SmartCell";
-    project.identity = {
+    return {
       name: name,
       logo: initials(name),
       colors: project.brand.colors.slice(),
       typography: project.brand.style === "Premium" ? "Inter + serif display" : "Inter Bold",
       slogan: project.brand.slogan || suggestedSlogans()[0],
       files: ["brand-summary.json", "logo.txt", "social-materials.txt"],
+      source: "local-fallback",
       mock: true
     };
-    markDone("slogan");
-    saveProject();
+  }
+
+  async function generateIdentityReal() {
+    var api = apiClient();
+    var fallback = generateIdentityMock();
+    if (!api || typeof api.generateIdentity !== "function") {
+      project.identity = fallback;
+      project.apiStatus.identity = "api-client-unavailable";
+      markDone("slogan");
+      saveProject();
+      return { fallback: true };
+    }
+    try {
+      var response = await api.generateIdentity(identityPayload());
+      if (!response || response.ok === false) {
+        fallback.apiError = response && (response.message || response.error) || "identity_generation_failed";
+        project.identity = fallback;
+        project.apiStatus.identity = fallback.apiError;
+        markDone("slogan");
+        saveProject();
+        return { fallback: true };
+      }
+      project.identity = normalizeApiIdentity(response);
+      project.apiStatus.identity = "connected";
+      markDone("slogan");
+      saveProject();
+      return { fallback: false };
+    } catch (error) {
+      fallback.apiError = error && error.message || "identity_generation_failed";
+      project.identity = fallback;
+      project.apiStatus.identity = fallback.apiError;
+      markDone("slogan");
+      saveProject();
+      return { fallback: true };
+    }
+  }
+
+  function identityPayload() {
+    var location = [project.brand.city, project.brand.uf].filter(Boolean).join("/");
+    var prompt = [
+      "Crie uma identidade visual inicial para uma loja de celulares e acessorios chamada " + project.brand.name + ".",
+      location ? "A loja vai atuar em " + location + "." : "",
+      project.brand.style ? "Estilo visual desejado: " + project.brand.style + "." : "",
+      project.brand.products.length ? "Produtos principais: " + project.brand.products.join(", ") + "." : "",
+      project.brand.colors.length ? "Cores escolhidas: " + project.brand.colors.join(", ") + "." : "",
+      project.brand.logoStyle ? "Preferencia de logotipo: " + project.brand.logoStyle + "." : "",
+      project.brand.message ? "Mensagem que a marca deve transmitir: " + project.brand.message + "." : "",
+      project.brand.slogan ? "Slogan sugerido pelo usuario: " + project.brand.slogan + "." : "",
+      "Gere uma resposta estruturada para a previa gratuita com nome, slogan, tom de comunicacao, descricao curta para WhatsApp, paleta, tipografia e sugestoes visuais simples."
+    ].filter(Boolean).join(" ");
+    return {
+      storeName: project.brand.name,
+      name: project.brand.name,
+      city: project.brand.city,
+      state: project.brand.uf,
+      businessType: "loja de celulares e acessorios",
+      focus: project.brand.products.join(", "),
+      products: project.brand.products.slice(),
+      categories: project.brand.products.slice(),
+      style: project.brand.style,
+      colors: project.brand.colors.slice(),
+      logoStyle: project.brand.logoStyle,
+      brandMessage: project.brand.message,
+      message: prompt,
+      prompt: prompt,
+      description: prompt,
+      slogan: project.brand.slogan,
+      source: "autozap-start-desktop"
+    };
+  }
+
+  function normalizeApiIdentity(response) {
+    var data = response.data && typeof response.data === "object" ? response.data : response;
+    var name = data.storeName || data.name || project.brand.name.trim() || "SmartCell";
+    var colors = Array.isArray(data.colors) && data.colors.length ? data.colors.slice(0, 3) : project.brand.colors.slice();
+    while (colors.length < 3) colors.push(project.brand.colors[colors.length] || "#2f6bff");
+    return {
+      name: name,
+      logo: data.logo || initials(name),
+      colors: colors,
+      typography: data.typography || data.font || (project.brand.style === "Premium" ? "Inter + serif display" : "Inter Bold"),
+      slogan: data.slogan || project.brand.slogan || suggestedSlogans()[0],
+      tone: data.tone || project.brand.message,
+      instagramBio: data.instagramBio || "",
+      whatsappDescription: data.whatsappDescription || "",
+      googleDescription: data.googleDescription || data.googleBusinessDescription || "",
+      visualSuggestions: data.visualSuggestions || [],
+      files: ["brand-summary.json", "logo.txt", "social-materials.txt"],
+      source: "autozap-start-api",
+      apiRaw: response,
+      mock: false
+    };
   }
 
   function getIdentity() {
@@ -558,22 +667,86 @@
     };
   }
 
-  function buildStockSuggestion() {
+  function buildStockSuggestion(reason) {
     return {
       orderId: "AZS-" + Date.now().toString(36).toUpperCase(),
-      supplier: "Fornecedor parceiro configurável",
+      supplier: reason === "empty" ? "Nenhum fornecedor parceiro cadastrado" : "Sugestao local temporaria",
       items: (project.inventory.categories.length ? project.inventory.categories : project.brand.products).slice(0, 5).map(function(category, index) {
         return { category: category, quantity: (index + 1) * 6 };
       }),
       paymentNote: "Pagamento diretamente ao fornecedor. Pix do fornecedor.",
-      mock: true
+      source: reason === "empty" ? "api-empty" : "local-fallback",
+      mock: reason !== "empty"
+    };
+  }
+
+  async function generateStockSuggestion() {
+    var api = apiClient();
+    project.inventory.loading = true;
+    project.inventory.suggestion = null;
+    saveProject();
+    render();
+    try {
+      if (!api || typeof api.apiGetStartSuppliers !== "function") {
+        project.inventory.suggestion = buildStockSuggestion("api-client-unavailable");
+        project.apiStatus.suppliers = "api-client-unavailable";
+      } else {
+        var response = await api.apiGetStartSuppliers();
+        var suppliers = response && (response.suppliers || response.data) || [];
+        if (!Array.isArray(suppliers) || !suppliers.length) {
+          project.inventory.suggestion = buildStockSuggestion("empty");
+          project.inventory.suggestion.items = [];
+          project.inventory.suggestion.paymentNote = "O endpoint de fornecedores respondeu, mas ainda nao ha fornecedor parceiro cadastrado para montar pedido real.";
+          project.apiStatus.suppliers = "empty";
+        } else {
+          project.inventory.suggestion = await buildApiStockSuggestion(api, suppliers);
+          project.apiStatus.suppliers = "connected";
+        }
+      }
+    } catch (error) {
+      project.inventory.suggestion = buildStockSuggestion("api-error");
+      project.inventory.suggestion.apiError = error && error.message || "suppliers_load_failed";
+      project.apiStatus.suppliers = project.inventory.suggestion.apiError;
+    }
+    project.inventory.loading = false;
+    saveProject();
+    render();
+  }
+
+  async function buildApiStockSuggestion(api, suppliers) {
+    var supplier = suppliers[0] || {};
+    var products = [];
+    if (supplier.id && typeof api.apiGetStartSupplierProducts === "function") {
+      var response = await api.apiGetStartSupplierProducts(supplier.id);
+      products = response && (response.products || response.data) || [];
+      if (!Array.isArray(products)) products = [];
+    }
+    var categories = project.inventory.categories.length ? project.inventory.categories : project.brand.products;
+    var items = products.length ? products.slice(0, 5).map(function(product, index) {
+      return {
+        category: product.category || product.name || categories[index % Math.max(categories.length, 1)] || "Produto",
+        quantity: Number(product.suggestedQuantity || product.quantity || 6)
+      };
+    }) : categories.slice(0, 5).map(function(category, index) {
+      return { category: category, quantity: (index + 1) * 6 };
+    });
+    return {
+      orderId: "AZS-" + Date.now().toString(36).toUpperCase(),
+      supplier: supplier.name || supplier.companyName || supplier.tradeName || "Fornecedor parceiro",
+      supplierId: supplier.id || "",
+      items: items,
+      paymentNote: "Pagamento diretamente ao fornecedor. Pix do fornecedor.",
+      source: "portal-fornecedor-api",
+      mock: false
     };
   }
 
   function inventorySuggestion() {
     var suggestion = project.inventory.suggestion;
     if (!suggestion) return "";
-    return '<div class="summary-panel"><span class="status-pill">Sugestao mockada</span><strong>Pedido ' + escapeHtml(suggestion.orderId) + '</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p><ul>' + suggestion.items.map(function(item) { return '<li>' + escapeHtml(item.category) + ': ' + item.quantity + ' unidades</li>'; }).join("") + '</ul><small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
+    var label = suggestion.source === "portal-fornecedor-api" ? "Fornecedor conectado" : suggestion.source === "api-empty" ? "API conectada sem fornecedor" : "Fallback local identificado";
+    var items = suggestion.items && suggestion.items.length ? '<ul>' + suggestion.items.map(function(item) { return '<li>' + escapeHtml(item.category) + ': ' + item.quantity + ' unidades</li>'; }).join("") + '</ul>' : '<p>Nenhum item real retornado pelo Portal do Fornecedor ainda.</p>';
+    return '<div class="summary-panel"><span class="status-pill">' + escapeHtml(label) + '</span><strong>Pedido ' + escapeHtml(suggestion.orderId) + '</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p>' + items + '<small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
   }
 
   function downloadProject(type) {
@@ -584,7 +757,8 @@
       note: "Download gratuito simulado. Estrutura pronta para arquivos reais.",
       brand: project.brand,
       identity: identity,
-      inventory: project.inventory
+      inventory: project.inventory,
+      apiStatus: project.apiStatus
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
@@ -688,6 +862,16 @@
     return String(value == null ? "" : value).replace(/[&<>"']/g, function(char) {
       return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
     });
+  }
+
+  function apiClient() {
+    if (window.AutoZapAPI) return window.AutoZapAPI;
+    try {
+      if (typeof AutoZapAPI !== "undefined") return AutoZapAPI;
+    } catch (error) {
+      return null;
+    }
+    return null;
   }
 
   function escapeAttr(value) {
