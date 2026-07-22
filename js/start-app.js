@@ -828,9 +828,11 @@
   function renderBrandMockups(identity, logoMarkupText) {
     var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
     return [
-      '<article class="mockup-card profile-mockup">' + compactLogo + '<strong>Perfil social</strong><small>@' + escapeHtml(slugify(identity.name)) + '</small></article>',
-      '<article class="mockup-card banner-mockup"><div>' + compactLogo + '<strong>' + escapeHtml(identity.slogan) + '</strong></div><small>Banner promocional</small></article>',
-      '<article class="mockup-card card-mockup">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><small>Cartao de visita</small></article>',
+      '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>',
+      '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>',
+      '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>',
+      '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>',
+      '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>',
       '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>'
     ].join("");
   }

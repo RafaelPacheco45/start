@@ -1097,7 +1097,7 @@ a { color: inherit; text-decoration: none; }
 }
 .presentation-grid {
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+  grid-template-columns: minmax(300px, .82fr) minmax(360px, 1.18fr);
   gap: 18px;
 }
 .brand-board {
@@ -1161,6 +1161,7 @@ a { color: inherit; text-decoration: none; }
   color: #ffe0a8;
 }
 .mockup-grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .mockup-card {
@@ -1175,7 +1176,8 @@ a { color: inherit; text-decoration: none; }
 .visual-mockups .mockup-card {
   position: relative;
   overflow: hidden;
-  min-height: 210px;
+  min-height: 220px;
+  border: 1px solid rgba(7, 19, 63, .08);
 }
 .mini-logo {
   width: 132px;
@@ -1192,31 +1194,143 @@ a { color: inherit; text-decoration: none; }
 .mini-logo .image-logo {
   aspect-ratio: 1;
 }
-.profile-mockup {
+.storefront-mockup {
+  align-content: stretch;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.94), rgba(238,245,255,.92)),
+    #fff;
+}
+.storefront-sign {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  margin: -4px -4px 0;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: #07133f;
+  color: #fff;
+}
+.storefront-sign .mini-logo {
+  width: 72px;
+}
+.storefront-sign strong {
+  font-size: 1.05rem;
+}
+.storefront-window {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.storefront-window span {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #dce7f7, #fff);
+  color: var(--start-muted);
+  font-size: .78rem;
+  font-weight: 900;
+}
+.tshirt-mockup {
   place-items: center;
   align-content: center;
-  text-align: center;
+  background: radial-gradient(circle at 50% 22%, #fff, #e9f1ff);
 }
-.profile-mockup .mini-logo {
-  width: 118px;
+.shirt-shape {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(25% 0, 39% 10%, 61% 10%, 75% 0, 100% 25%, 82% 42%, 82% 100%, 18% 100%, 18% 42%, 0 25%);
+  background: linear-gradient(180deg, #ffffff, #dbe7fb);
+  box-shadow: inset 0 0 0 1px rgba(7,19,63,.08);
+}
+.shirt-shape .mini-logo {
+  width: 78px;
   border-radius: 999px;
   aspect-ratio: 1;
 }
-.profile-mockup .mini-logo svg {
-  width: 278px;
-  max-width: none;
-  transform: translateX(-78px);
-}
-.banner-mockup {
-  background: linear-gradient(135deg, #07133f, #2f6bff);
-  color: #fff;
-}
-.banner-mockup > div {
-  display: grid;
-  gap: 14px;
+.shirt-shape .mini-logo .visual-logo {
+  aspect-ratio: 1;
 }
 .card-mockup {
+  place-items: center;
+  background: linear-gradient(145deg, #eef4ff, #fff);
+}
+.business-card-front {
+  width: min(100%, 260px);
+  min-height: 142px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #07133f;
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(7,19,63,.20);
+}
+.business-card-front .mini-logo {
+  width: 88px;
+}
+.business-card-front span {
+  color: rgba(255,255,255,.70);
+  font-size: .8rem;
+  font-weight: 750;
+}
+.bag-mockup {
+  place-items: center;
   background: linear-gradient(145deg, #fff, #edf4ff);
+}
+.bag-shape {
+  position: relative;
+  width: 150px;
+  min-height: 168px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 42px 18px 22px;
+  border-radius: 8px 8px 18px 18px;
+  background: #fff;
+  box-shadow: 0 22px 42px rgba(7,19,63,.16);
+}
+.bag-shape i {
+  position: absolute;
+  top: 18px;
+  width: 54px;
+  height: 26px;
+  border: 3px solid #c8d7ef;
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+}
+.bag-shape .mini-logo {
+  width: 86px;
+}
+.bag-shape strong {
+  font-size: .82rem;
+}
+.social-post-mockup {
+  background: linear-gradient(145deg, #07133f, #2f6bff);
+  color: #fff;
+}
+.post-frame {
+  min-height: 158px;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
+}
+.post-frame .mini-logo {
+  width: 94px;
+}
+.post-frame span {
+  color: rgba(255,255,255,.72);
+  font-size: .82rem;
+  font-weight: 850;
 }
 .phone-mockup {
   place-items: center;
@@ -1322,6 +1436,9 @@ a { color: inherit; text-decoration: none; }
   }
   .builder-top {
     grid-template-columns: 1fr;
+  }
+  .visual-mockups .mockup-card {
+    min-height: 190px;
   }
 }
 
