@@ -291,28 +291,162 @@ a { color: inherit; text-decoration: none; }
   font-size: 1.05rem;
   line-height: 1.7;
 }
-.data-slots {
+.market-snapshot {
   display: grid;
   gap: 12px;
 }
-.data-slots div,
+.snapshot-card,
 .process-grid article {
   border: 1px solid var(--start-line);
   border-radius: 14px;
   background: #f8fbff;
   padding: 18px;
 }
-.data-slots span {
+.snapshot-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 138px;
+  display: grid;
+  align-content: space-between;
+}
+.snapshot-card::after {
+  content: "";
+  position: absolute;
+  right: -42px;
+  top: -42px;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: rgba(47, 107, 255, .11);
+}
+.snapshot-card.main {
+  background: linear-gradient(145deg, #07133f, #174fde);
+  color: #fff;
+  box-shadow: 0 22px 50px rgba(23, 79, 222, .22);
+}
+.snapshot-card span {
   display: block;
   color: var(--start-muted);
   font-size: .78rem;
   font-weight: 900;
   text-transform: uppercase;
 }
-.data-slots strong {
+.snapshot-card.main span,
+.snapshot-card.main small {
+  color: rgba(255,255,255,.72);
+}
+.snapshot-card strong {
   display: block;
   margin-top: 6px;
   color: var(--start-ink);
+  font-size: clamp(1.85rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+.snapshot-card.main strong {
+  color: #fff;
+}
+.snapshot-card small {
+  display: block;
+  color: var(--start-muted);
+  line-height: 1.45;
+}
+.opportunity-callout {
+  display: grid;
+  gap: 5px;
+  border-left: 4px solid var(--start-blue);
+  background: #f3f7ff;
+  padding: 16px 18px;
+}
+.opportunity-callout strong {
+  color: var(--start-ink);
+}
+.opportunity-callout span {
+  color: var(--start-muted);
+  line-height: 1.55;
+}
+.profit-panel {
+  display: grid;
+  grid-template-columns: minmax(0, .84fr) minmax(0, 1.16fr);
+  gap: 24px;
+  margin-top: clamp(28px, 5vw, 54px);
+  border: 1px solid #cbdcff;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(47,107,255,.12), rgba(255,255,255,.96) 46%),
+    #fff;
+  box-shadow: 0 24px 62px rgba(18, 47, 105, .12);
+  padding: clamp(22px, 3vw, 34px);
+}
+.profit-copy {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.profit-copy h3 {
+  margin: 0;
+  color: var(--start-ink);
+  font-size: clamp(1.65rem, 3vw, 2.7rem);
+  line-height: 1.04;
+}
+.profit-copy p,
+.source-note {
+  margin: 0;
+  color: var(--start-muted);
+  line-height: 1.65;
+}
+.profit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.profit-grid article {
+  min-height: 142px;
+  display: grid;
+  align-content: space-between;
+  border: 1px solid rgba(47, 107, 255, .18);
+  border-radius: 14px;
+  background: rgba(255,255,255,.78);
+  padding: 16px;
+}
+.profit-grid span,
+.profit-example span {
+  color: var(--start-muted);
+  font-size: .76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+.profit-grid strong {
+  color: var(--start-ink);
+  font-size: 1.05rem;
+}
+.profit-grid small {
+  color: var(--start-muted);
+}
+.profit-grid b {
+  color: var(--start-green);
+  font-size: 1.1rem;
+}
+.profit-example {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(15, 170, 98, .22);
+  border-radius: 14px;
+  background: #f0fff7;
+  padding: 18px;
+}
+.profit-example strong {
+  color: #074b2d;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  line-height: 1.3;
+}
+.profit-example small {
+  color: #4c725d;
+  line-height: 1.5;
+}
+.source-note {
+  margin-top: 18px;
+  font-size: .9rem;
 }
 .process-section {
   background: linear-gradient(180deg, #f5f9ff, #eef4fb);
@@ -771,6 +905,7 @@ a { color: inherit; text-decoration: none; }
   .site-nav { display: none; }
   .hero-section,
   .editorial-grid,
+  .profit-panel,
   .free-section,
   .final-cta-section,
   .presentation-grid {
@@ -778,6 +913,7 @@ a { color: inherit; text-decoration: none; }
   }
   .hero-art { min-height: 420px; }
   .process-grid,
+  .profit-grid,
   .option-grid,
   .palette-grid,
   .plan-grid,
@@ -855,6 +991,17 @@ a { color: inherit; text-decoration: none; }
   .free-section,
   .final-cta-section {
     padding: 50px 18px;
+  }
+  .profit-panel {
+    padding: 18px;
+    border-radius: 14px;
+  }
+  .profit-grid,
+  .market-snapshot {
+    grid-template-columns: 1fr;
+  }
+  .profit-grid article {
+    min-height: 124px;
   }
   .process-grid,
   .option-grid,
