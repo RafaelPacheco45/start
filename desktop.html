@@ -8,7 +8,7 @@
     <link rel="shortcut icon" type="image/png" href="./favicon.png">
     <link rel="apple-touch-icon" href="./favicon.png">
     <link rel="stylesheet" href="./css/theme.css">
-    <link rel="stylesheet" href="./css/desktop.css?v=start-redesign-1">
+    <link rel="stylesheet" href="./css/desktop.css?v=start-sequence-1">
   </head>
   <body>
     <header class="start-landing" id="top">
@@ -95,27 +95,42 @@
         <h2>Da ideia da marca ao preview da loja</h2>
         <p>As proximas abas internas organizam as decisoes de identidade, perfil comercial, atendimento, estoque e publicacao.</p>
       </div>
-      <div class="start-tabs" id="templates">
-        <a href="#startBuilder">
-          <span>01</span>
-          <strong>Identidade visual</strong>
-          <small>Nome, logo, cores, slogan e textos de apresentacao.</small>
-        </a>
-        <a href="#startBuilder">
-          <span>02</span>
-          <strong>Preview da loja</strong>
-          <small>Veja como sua loja pode aparecer no site e no celular.</small>
-        </a>
-        <a href="#startBuilder">
-          <span>03</span>
-          <strong>Estoque inicial</strong>
-          <small>Escolha fornecedores e produtos para comecar a vender.</small>
-        </a>
-        <a href="#startBuilder">
-          <span>04</span>
-          <strong>Publicacao</strong>
-          <small>Revise tudo e avance para o AutoZap principal.</small>
-        </a>
+      <div class="start-sequence" id="templates">
+        <div class="sequence-tabs" role="tablist" aria-label="Etapas sequenciais do AutoZap Start">
+          <button class="active" id="sequenceTab1" type="button" role="tab" aria-selected="true" aria-controls="sequencePanel" data-sequence-tab="0">
+            <span>01</span>
+            <strong>Identidade visual</strong>
+          </button>
+          <button id="sequenceTab2" type="button" role="tab" aria-selected="false" aria-controls="sequencePanel" data-sequence-tab="1">
+            <span>02</span>
+            <strong>Preview da loja</strong>
+          </button>
+          <button id="sequenceTab3" type="button" role="tab" aria-selected="false" aria-controls="sequencePanel" data-sequence-tab="2">
+            <span>03</span>
+            <strong>Estoque inicial</strong>
+          </button>
+          <button id="sequenceTab4" type="button" role="tab" aria-selected="false" aria-controls="sequencePanel" data-sequence-tab="3">
+            <span>04</span>
+            <strong>Publicacao</strong>
+          </button>
+        </div>
+
+        <article class="sequence-panel" id="sequencePanel" role="tabpanel" aria-labelledby="sequenceTab1">
+          <div>
+            <span id="sequenceKicker">Etapa 01</span>
+            <h3 id="sequenceTitle">Identidade visual</h3>
+            <p id="sequenceDescription">Defina nome, logo, paleta, slogan e textos iniciais para deixar a loja pronta para se apresentar.</p>
+          </div>
+          <ul id="sequenceList">
+            <li>Nome e posicionamento da loja</li>
+            <li>Logo e cores principais</li>
+            <li>Bio e mensagem comercial</li>
+          </ul>
+          <div class="sequence-actions">
+            <button id="sequenceBack" class="sequence-secondary" type="button" disabled>Voltar</button>
+            <button id="sequenceNext" class="sequence-primary" type="button">Proxima etapa</button>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -201,6 +216,71 @@
       </aside>
     </main>
 
+    <script>
+      (function(){
+        var steps = [
+          {
+            title: "Identidade visual",
+            description: "Defina nome, logo, paleta, slogan e textos iniciais para deixar a loja pronta para se apresentar.",
+            items: ["Nome e posicionamento da loja", "Logo e cores principais", "Bio e mensagem comercial"]
+          },
+          {
+            title: "Preview da loja",
+            description: "Veja uma simulacao da vitrine digital em desktop e celular antes de seguir para os ajustes finais.",
+            items: ["Vitrine com destaque principal", "Categorias e chamadas comerciais", "Visual responsivo para celular"]
+          },
+          {
+            title: "Estoque inicial",
+            description: "Organize fornecedores, produtos e investimento estimado para iniciar a operacao com clareza.",
+            items: ["Fornecedor recomendado", "Produtos selecionados", "Total estimado do pedido"]
+          },
+          {
+            title: "Publicacao",
+            description: "Revise a identidade, o atendimento e os produtos antes de continuar para o AutoZap principal.",
+            items: ["Resumo da loja", "Contato do responsavel", "Envio para continuar no AutoZap"]
+          }
+        ];
+        var active = 0;
+        var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-sequence-tab]"));
+        var panel = document.querySelector("#sequencePanel");
+        var kicker = document.querySelector("#sequenceKicker");
+        var title = document.querySelector("#sequenceTitle");
+        var description = document.querySelector("#sequenceDescription");
+        var list = document.querySelector("#sequenceList");
+        var back = document.querySelector("#sequenceBack");
+        var next = document.querySelector("#sequenceNext");
+        function render(index) {
+          active = Math.max(0, Math.min(steps.length - 1, index));
+          tabs.forEach(function(tab, tabIndex) {
+            var selected = tabIndex === active;
+            tab.classList.toggle("active", selected);
+            tab.classList.toggle("done", tabIndex < active);
+            tab.setAttribute("aria-selected", selected ? "true" : "false");
+          });
+          var step = steps[active];
+          panel.setAttribute("aria-labelledby", "sequenceTab" + (active + 1));
+          kicker.textContent = "Etapa " + String(active + 1).padStart(2, "0");
+          title.textContent = step.title;
+          description.textContent = step.description;
+          list.innerHTML = step.items.map(function(item) { return "<li>" + item + "</li>"; }).join("");
+          back.disabled = active === 0;
+          next.textContent = active === steps.length - 1 ? "Abrir construtor" : "Proxima etapa";
+        }
+        tabs.forEach(function(tab) {
+          tab.addEventListener("click", function() {
+            render(Number(tab.dataset.sequenceTab));
+          });
+        });
+        back.addEventListener("click", function() { render(active - 1); });
+        next.addEventListener("click", function() {
+          if (active === steps.length - 1) {
+            document.querySelector("#startBuilder").scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+          render(active + 1);
+        });
+      })();
+    </script>
     <script src="./js/config.js"></script>
     <script src="./js/api.js"></script>
     <script src="./js/desktop.js"></script>
