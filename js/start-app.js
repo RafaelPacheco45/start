@@ -354,7 +354,7 @@
     return header("Slogan", "Quer adicionar um slogan?", "Digite o seu, escolha uma sugestão ou pule. O download continua gratuito.", true) +
       '<div class="field-stack"><label>Slogan<input data-field="brand.slogan" value="' + escapeAttr(project.brand.slogan) + '" placeholder="Ex: Tecnologia perto de você"></label></div>' +
       '<div class="suggestion-row">' + suggestedSlogans().map(function(text) { return '<button class="chip" type="button" data-set-slogan="' + escapeAttr(text) + '">' + escapeHtml(text) + '</button>'; }).join("") + '</div>' +
-      '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-slogan">Pular</button><button class="builder-primary" type="button" data-action="generate">Gerar identidade</button></div></section>';
+      '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-slogan">Pular e gerar identidade</button><button class="builder-primary" type="button" data-action="generate">Gerar identidade</button></div></section>';
   }
 
   function renderGenerating() {
@@ -511,7 +511,7 @@
     if (action === "next") return next();
     if (action === "back") return back();
     if (action === "generate") return startGeneration();
-    if (action === "skip-slogan") { project.brand.slogan = project.brand.slogan || ""; return startGeneration(); }
+    if (action === "skip-slogan") return skipSloganAndGenerate();
     if (action === "new-suggestions") return render();
     if (action === "skip-formalization") { project.skipped.formalization = true; return goTo("inventory"); }
     if (action === "skip-plans") { project.skipped.plans = true; return goTo("autozap"); }
@@ -549,6 +549,14 @@
       project.error = "Este navegador já realizou a criação gratuita inicial. A estrutura está preparada para validar conta, e-mail, sessão, dispositivo e identificador interno no backend.";
       return render();
     }
+    project.state = "generating";
+    saveProject();
+    render();
+  }
+
+  function skipSloganAndGenerate() {
+    project.brand.slogan = "";
+    project.error = "";
     project.state = "generating";
     saveProject();
     render();
