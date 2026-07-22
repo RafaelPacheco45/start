@@ -28,6 +28,7 @@ const files = [
   "js/start-app.js",
   "js/admin.js",
   "js/healthcheck.js",
+  "banner.png",
   "assets/autozap-logo.png",
   "assets/autozap-logo-mark.png",
   "assets/hero-autozap-start.png",
