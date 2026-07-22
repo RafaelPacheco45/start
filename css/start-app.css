@@ -36,6 +36,30 @@ button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .55; }
 a { color: inherit; text-decoration: none; }
+.az-start-app,
+.az-start-app * {
+  caret-color: transparent;
+}
+.az-start-app p,
+.az-start-app h1,
+.az-start-app h2,
+.az-start-app h3,
+.az-start-app span,
+.az-start-app small,
+.az-start-app strong,
+.az-start-app li {
+  cursor: default;
+}
+.az-start-app input,
+.az-start-app textarea {
+  caret-color: auto;
+  cursor: text;
+}
+.az-start-app select,
+.az-start-app button,
+.az-start-app a[href] {
+  cursor: pointer;
+}
 :focus-visible {
   outline: 3px solid rgba(47, 107, 255, .42);
   outline-offset: 3px;
