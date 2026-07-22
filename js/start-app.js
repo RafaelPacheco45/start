@@ -7,7 +7,7 @@
 (function(){
   "use strict";
 
-  var STORAGE_KEY = "autozap_start_platform_state_v1";
+  var STORAGE_KEY = "autozap_start_platform_state_v2";
   var USAGE_KEY = "autozap_start_platform_usage_v1";
   var FREE_GENERATION_LIMIT = 1;
   var GOV_MEI_URL = "https://www.gov.br/empresas-e-negocios/pt-br/empreendedor";
@@ -112,7 +112,7 @@
 
   var project = loadProject();
   bindLanding();
-  restoreIfNeeded();
+  prepareLanding();
 
   function defaultProject() {
     return {
@@ -183,10 +183,11 @@
     });
   }
 
-  function restoreIfNeeded() {
-    if (project.state && project.state !== "landing") {
-      showBuilder(project.state);
-    }
+  function prepareLanding() {
+    landing.hidden = false;
+    builder.hidden = true;
+    intro.hidden = true;
+    shell.dataset.mode = "landing";
   }
 
   function startIntro() {

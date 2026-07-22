@@ -32,7 +32,6 @@ const files = [
   "assets/autozap-logo-mark.png",
   "assets/hero-autozap-start.png",
   "assets/start-hero-banner.png",
-  "assets/start-journey-banner.png",
   "README.md",
   "AUTOZAP_START_FLOW_ALIGNMENT.md",
   "source/js/config.js",
