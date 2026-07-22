@@ -49,6 +49,9 @@ a { color: inherit; text-decoration: none; }
   opacity: 0;
   transform: translateY(-16px);
 }
+.app-shell[data-mode="builder"] .site-header {
+  display: none;
+}
 .landing-view,
 .site-header {
   transition: opacity .45s ease, transform .55s ease, filter .55s ease;
