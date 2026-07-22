@@ -18,12 +18,14 @@ const files = [
   "css/theme.css",
   "css/mobile.css",
   "css/desktop.css",
+  "css/start-app.css",
   "css/admin.css",
   "js/config.js",
   "js/router.js",
   "js/api.js",
   "js/mobile.js",
   "js/desktop.js",
+  "js/start-app.js",
   "js/admin.js",
   "js/healthcheck.js",
   "assets/autozap-logo.png",
@@ -43,7 +45,7 @@ const files = [
 
 const htmlJsPairs = [
   ["mobile.html", "source/js/mobile.js"],
-  ["desktop.html", "source/js/desktop.js"],
+  ["desktop.html", "js/start-app.js"],
   ["admin.html", "source/js/admin.js"],
 ];
 
@@ -52,6 +54,7 @@ const jsCheckFiles = [
   "js/api.js",
   "js/mobile.js",
   "js/desktop.js",
+  "js/start-app.js",
   "js/admin.js",
   "js/router.js",
   "js/healthcheck.js",
