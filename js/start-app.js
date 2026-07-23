@@ -719,27 +719,20 @@
     }
     var mockups = [];
     var specs = mockupImageSpecs(identity);
-    for (var index = 0; index < specs.length; index += 1) {
-      var spec = specs[index];
-      try {
-        var response = await api.generateStartImage(mockupImagePayload(identity, spec));
-        var image = normalizeImageResponse(response);
-        if (image) {
-          mockups.push({
-            type: spec.type,
-            title: spec.title,
-            imageDataUrl: image.imageDataUrl,
-            mimeType: image.mimeType || "image/png",
-            model: image.model || "",
-            source: "autozap-start-image-api"
-          });
-          project.apiStatus.mockups = mockups.length + "/" + specs.length;
-          identity.mockups = mockups.slice();
-          project.identity = identity;
-          saveProject();
-        }
-      } catch (error) {
-        project.apiStatus.mockups = error && error.message || "mockup_generation_failed";
+    var concurrency = 2;
+    for (var index = 0; index < specs.length; index += concurrency) {
+      var batch = specs.slice(index, index + concurrency);
+      var results = await Promise.all(batch.map(function(spec) {
+        return generateSingleMockup(api, identity, spec);
+      }));
+      results.forEach(function(mockup) {
+        if (mockup) mockups.push(mockup);
+      });
+      if (mockups.length) {
+        project.apiStatus.mockups = mockups.length + "/" + specs.length;
+        identity.mockups = mockups.slice();
+        project.identity = identity;
+        saveProject();
       }
     }
     if (!mockups.length && project.apiStatus.mockups !== "image-client-unavailable") {
@@ -753,28 +746,65 @@
     return mockups;
   }
 
+  async function generateSingleMockup(api, identity, spec) {
+    try {
+      var response = await api.generateStartImage(mockupImagePayload(identity, spec));
+      var image = normalizeImageResponse(response);
+      if (!image) return null;
+      return {
+        type: spec.type,
+        title: spec.title,
+        imageDataUrl: image.imageDataUrl,
+        mimeType: image.mimeType || "image/png",
+        model: image.model || "",
+        source: "autozap-start-image-api"
+      };
+    } catch (error) {
+      project.apiStatus.mockups = error && error.message || "mockup_generation_failed";
+      return null;
+    }
+  }
+
   function mockupImageSpecs(identity) {
     return [
       {
         type: "storefront",
         title: "Fachada real da loja",
-        prompt: "Crie uma imagem realista de fachada de loja de celulares moderna com a marca " + identity.name + " aplicada em um letreiro grande. A fachada deve parecer uma loja real de smartphones e acessorios, com vitrine, iluminacao profissional e cores da marca."
+        prompt: "Crie uma imagem realista de fachada de loja de celulares moderna com a mesma logo da marca " + identity.name + " aplicada em um letreiro grande. A fachada deve parecer uma loja real de smartphones e acessorios, com vitrine, iluminacao profissional e cores da marca."
       },
       {
         type: "tshirt",
         title: "Camiseta da equipe",
-        prompt: "Crie uma imagem realista de camiseta de equipe para loja de celulares com a marca " + identity.name + " aplicada no peito. Visual profissional, tecido real, fundo limpo de estudio, cores da marca."
+        prompt: "Crie uma imagem realista de camiseta de equipe para loja de celulares com a mesma logo da marca " + identity.name + " aplicada no peito. Visual profissional, tecido real, fundo limpo de estudio, cores da marca."
       },
       {
         type: "business-card",
         title: "Cartao de visita",
-        prompt: "Crie uma imagem realista de cartao de visita premium para uma loja de celulares chamada " + identity.name + ". Aplique a marca, slogan e paleta de cores. Mostrar o cartao sobre uma mesa limpa, com acabamento profissional."
+        prompt: "Crie uma imagem realista de cartao de visita premium para uma loja de celulares chamada " + identity.name + ". Aplique a mesma logo ja gerada, slogan e paleta de cores. Mostrar o cartao sobre uma mesa limpa, com acabamento profissional."
+      },
+      {
+        type: "bag",
+        title: "Sacola e embalagem",
+        prompt: "Crie uma imagem realista de sacola e embalagem de entrega para loja de celulares chamada " + identity.name + ". Use a mesma logo ja gerada em destaque na sacola, com acabamento premium, embalagem limpa, cores da marca e contexto de acessorios de celular."
+      },
+      {
+        type: "social-post",
+        title: "Post para redes sociais",
+        prompt: "Crie uma imagem realista de mockup de post para Instagram de uma loja de celulares chamada " + identity.name + ". Use a mesma logo ja gerada, paleta da marca e uma composicao profissional de promocao de smartphones e acessorios, como se estivesse exibida em uma tela de celular."
+      },
+      {
+        type: "featured-products",
+        title: "Produtos em destaque",
+        prompt: "Crie uma imagem realista de vitrine ou catalogo inicial com produtos em destaque para a loja de celulares " + identity.name + ". Use a mesma logo ja gerada no topo da vitrine ou pagina, inclua smartphones, capas, peliculas, carregadores e fones com visual comercial premium."
       }
     ];
   }
 
   function mockupImagePayload(identity, spec) {
+    var logoImageReference = compactImageDataUrl(identity.imageDataUrl);
+    var hasLogoReference = Boolean(logoImageReference);
     var prompt = [
+      hasLogoReference ? "Use como referencia visual principal a logo ja gerada no campo logoImageDataUrl. A logo deve ser reaplicada com consistencia, sem reinventar simbolo, nome ou paleta." : "Use a logo ja gerada na etapa anterior como referencia conceitual, mantendo nome, simbolo, estilo e paleta consistentes entre todos os mockups.",
       spec.prompt,
       "Nome da loja: " + identity.name + ".",
       "Slogan: " + (identity.slogan || project.brand.slogan || "") + ".",
@@ -791,8 +821,17 @@
       description: spec.title,
       style: [project.brand.style, project.brand.logoStyle, "mockup realista"].filter(Boolean).join(", "),
       colors: project.brand.colors.slice(),
+      logo: identity.logo || "",
+      logoSvg: identity.logoSvg || "",
+      logoImageDataUrl: logoImageReference,
+      referenceImageDataUrl: logoImageReference,
       source: "autozap-start-mockup-" + spec.type
     };
+  }
+
+  function compactImageDataUrl(value) {
+    var text = typeof value === "string" ? value : "";
+    return text.length && text.length <= 160000 ? text : "";
   }
 
   function imagePayload(identity) {
@@ -962,13 +1001,16 @@
     var storefront = real.storefront ? realMockupCard(real.storefront, "storefront") : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
     var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt") : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
     var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card") : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
+    var bag = real.bag ? realMockupCard(real.bag, "bag") : '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>';
+    var social = real["social-post"] ? realMockupCard(real["social-post"], "social-post") : '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>';
+    var featured = real["featured-products"] ? realMockupCard(real["featured-products"], "featured-products") : '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>';
     return [
       storefront,
       tshirt,
       card,
-      '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>',
-      '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>',
-      '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>'
+      bag,
+      social,
+      featured
     ].join("");
   }
 
