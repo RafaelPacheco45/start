@@ -163,7 +163,36 @@
   }
 
   function saveProject() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project)));
+    } catch (error) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project, true)));
+      } catch (innerError) {
+        project.apiStatus.storage = innerError && innerError.message || "local_storage_unavailable";
+      }
+    }
+  }
+
+  function storageSafeProject(source, compact) {
+    var snapshot = JSON.parse(JSON.stringify(source || {}));
+    if (snapshot.identity) {
+      delete snapshot.identity.imageDataUrl;
+      delete snapshot.identity.imageBase64;
+      delete snapshot.identity.apiRaw;
+      if (Array.isArray(snapshot.identity.mockups)) {
+        snapshot.identity.mockups = snapshot.identity.mockups.map(function(mockup) {
+          var copy = Object.assign({}, mockup);
+          delete copy.imageDataUrl;
+          delete copy.imageBase64;
+          return copy;
+        });
+      }
+    }
+    if (compact && snapshot.identity) {
+      snapshot.identity.mockups = [];
+    }
+    return snapshot;
   }
 
   function loadUsage() {
@@ -176,7 +205,11 @@
 
   function saveUsage() {
     project.usage.updatedAt = new Date().toISOString();
-    localStorage.setItem(USAGE_KEY, JSON.stringify(project.usage));
+    try {
+      localStorage.setItem(USAGE_KEY, JSON.stringify(project.usage));
+    } catch (error) {
+      project.apiStatus.storage = error && error.message || "local_storage_unavailable";
+    }
   }
 
   function createDeviceId() {
@@ -555,6 +588,10 @@
   }
 
   function skipSloganAndGenerate() {
+    if (!canGenerateIdentity()) {
+      project.error = "Este navegador já realizou a criação gratuita inicial. A estrutura está preparada para validar conta, e-mail, sessão, dispositivo e identificador interno no backend.";
+      return render();
+    }
     project.brand.slogan = "";
     project.error = "";
     project.state = "generating";
