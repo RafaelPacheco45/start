@@ -770,32 +770,32 @@
       {
         type: "storefront",
         title: "Fachada real da loja",
-        prompt: "Crie uma imagem realista de fachada de loja de celulares moderna com a mesma logo da marca " + identity.name + " aplicada em um letreiro grande. A fachada deve parecer uma loja real de smartphones e acessorios, com vitrine, iluminacao profissional e cores da marca."
+        prompt: "Crie uma imagem realista de fachada de loja de celulares moderna para a marca " + identity.name + ". Deixe um letreiro grande, limpo e sem texto ou logotipo, com espaço livre para aplicar a logo depois. A fachada deve parecer uma loja real de smartphones e acessorios, com vitrine, iluminacao profissional e cores da marca."
       },
       {
         type: "tshirt",
         title: "Camiseta da equipe",
-        prompt: "Crie uma imagem realista de camiseta de equipe para loja de celulares com a mesma logo da marca " + identity.name + " aplicada no peito. Visual profissional, tecido real, fundo limpo de estudio, cores da marca."
+        prompt: "Crie uma imagem realista de camiseta de equipe para loja de celulares. Deixe a area do peito limpa, sem texto ou logotipo, para aplicar a logo depois. Visual profissional, tecido real, fundo limpo de estudio, cores da marca."
       },
       {
         type: "business-card",
         title: "Cartao de visita",
-        prompt: "Crie uma imagem realista de cartao de visita premium para uma loja de celulares chamada " + identity.name + ". Aplique a mesma logo ja gerada, slogan e paleta de cores. Mostrar o cartao sobre uma mesa limpa, com acabamento profissional."
+        prompt: "Crie uma imagem realista de cartao de visita premium para uma loja de celulares chamada " + identity.name + ". Deixe uma area limpa no cartao, sem texto ou logotipo, para aplicar a logo depois. Mostrar o cartao sobre uma mesa limpa, com acabamento profissional e paleta da marca."
       },
       {
         type: "bag",
         title: "Sacola e embalagem",
-        prompt: "Crie uma imagem realista de sacola e embalagem de entrega para loja de celulares chamada " + identity.name + ". Use a mesma logo ja gerada em destaque na sacola, com acabamento premium, embalagem limpa, cores da marca e contexto de acessorios de celular."
+        prompt: "Crie uma imagem realista de sacola e embalagem de entrega para loja de celulares chamada " + identity.name + ". Deixe a frente da sacola limpa, sem texto ou logotipo, para aplicar a logo depois. Use acabamento premium, embalagem limpa, cores da marca e contexto de acessorios de celular."
       },
       {
         type: "social-post",
         title: "Post para redes sociais",
-        prompt: "Crie uma imagem realista de mockup de post para Instagram de uma loja de celulares chamada " + identity.name + ". Use a mesma logo ja gerada, paleta da marca e uma composicao profissional de promocao de smartphones e acessorios, como se estivesse exibida em uma tela de celular."
+        prompt: "Crie uma imagem realista de mockup de post para Instagram de uma loja de celulares chamada " + identity.name + ". Deixe uma area superior limpa, sem texto ou logotipo, para aplicar a logo depois. Use paleta da marca e uma composicao profissional de promocao de smartphones e acessorios, como se estivesse exibida em uma tela de celular."
       },
       {
         type: "featured-products",
         title: "Produtos em destaque",
-        prompt: "Crie uma imagem realista de vitrine ou catalogo inicial com produtos em destaque para a loja de celulares " + identity.name + ". Use a mesma logo ja gerada no topo da vitrine ou pagina, inclua smartphones, capas, peliculas, carregadores e fones com visual comercial premium."
+        prompt: "Crie uma imagem realista de vitrine ou catalogo inicial com produtos em destaque para a loja de celulares " + identity.name + ". Deixe o topo da vitrine ou pagina limpo, sem texto ou logotipo, para aplicar a logo depois. Inclua smartphones, capas, peliculas, carregadores e fones com visual comercial premium."
       }
     ];
   }
@@ -804,7 +804,8 @@
     var logoImageReference = compactImageDataUrl(identity.imageDataUrl);
     var hasLogoReference = Boolean(logoImageReference);
     var prompt = [
-      hasLogoReference ? "Use como referencia visual principal a logo ja gerada no campo logoImageDataUrl. A logo deve ser reaplicada com consistencia, sem reinventar simbolo, nome ou paleta." : "Use a logo ja gerada na etapa anterior como referencia conceitual, mantendo nome, simbolo, estilo e paleta consistentes entre todos os mockups.",
+      "Nao crie, nao escreva e nao redesenhe logotipo ou nome da marca dentro da imagem. O site vai aplicar a logo original por cima depois.",
+      hasLogoReference ? "Use a logo do campo logoImageDataUrl apenas como referencia de paleta e estilo, sem copiar texto na imagem." : "Use a identidade da etapa anterior apenas como referencia de paleta e estilo.",
       spec.prompt,
       "Nome da loja: " + identity.name + ".",
       "Slogan: " + (identity.slogan || project.brand.slogan || "") + ".",
@@ -998,12 +999,12 @@
   function renderBrandMockups(identity, logoMarkupText) {
     var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
     var real = mockupsByType(identity.mockups || []);
-    var storefront = real.storefront ? realMockupCard(real.storefront, "storefront") : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
-    var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt") : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
-    var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card") : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
-    var bag = real.bag ? realMockupCard(real.bag, "bag") : '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>';
-    var social = real["social-post"] ? realMockupCard(real["social-post"], "social-post") : '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>';
-    var featured = real["featured-products"] ? realMockupCard(real["featured-products"], "featured-products") : '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>';
+    var storefront = real.storefront ? realMockupCard(real.storefront, "storefront", identity) : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
+    var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt", identity) : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
+    var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card", identity) : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
+    var bag = real.bag ? realMockupCard(real.bag, "bag", identity) : '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>';
+    var social = real["social-post"] ? realMockupCard(real["social-post"], "social-post", identity) : '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>';
+    var featured = real["featured-products"] ? realMockupCard(real["featured-products"], "featured-products", identity) : '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>';
     return [
       storefront,
       tshirt,
@@ -1021,8 +1022,15 @@
     }, {});
   }
 
-  function realMockupCard(mockup, modifier) {
-    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '"><div><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem gerada pela API</small></div></article>';
+  function realMockupCard(mockup, modifier, identity) {
+    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem gerada pela API com logo original aplicada</small></div></article>';
+  }
+
+  function realLogoOverlay(identity, modifier) {
+    if (identity && identity.imageDataUrl) {
+      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(identity.imageDataUrl) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
+    }
+    return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + logoMarkup(ensureLogoSvg(identity || getIdentity())) + '</div>';
   }
 
   function sanitizeColor(value, fallback) {
