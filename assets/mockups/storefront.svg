@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Fachada de loja">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#08132b"/>
+      <stop offset="1" stop-color="#11285f"/>
+    </linearGradient>
+    <linearGradient id="street" x1="0" x2="1">
+      <stop offset="0" stop-color="#101827"/>
+      <stop offset="1" stop-color="#1b2640"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" x2="1">
+      <stop offset="0" stop-color="#dce8ff" stop-opacity=".88"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".56"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <circle cx="960" cy="155" r="108" fill="#f9c97f" opacity=".18"/>
+  <rect y="560" width="1200" height="240" fill="url(#street)"/>
+  <path d="M0 620h1200" stroke="#8ea8da" stroke-opacity=".22" stroke-width="3"/>
+  <path d="M0 700h1200" stroke="#ffffff" stroke-opacity=".06" stroke-width="2"/>
+  <g transform="translate(170 160)">
+    <rect x="0" y="0" width="860" height="500" rx="28" fill="#e9eef8"/>
+    <rect x="28" y="28" width="804" height="444" rx="18" fill="#0c1630"/>
+    <rect x="46" y="44" width="768" height="88" rx="16" fill="#121d3f"/>
+    <rect x="310" y="54" width="240" height="62" rx="16" fill="#edf4ff"/>
+    <rect x="325" y="66" width="210" height="16" rx="8" fill="#2f6bff"/>
+    <rect x="325" y="88" width="134" height="10" rx="5" fill="#0faa62"/>
+    <g transform="translate(64 156)">
+      <rect width="730" height="286" rx="14" fill="url(#glass)"/>
+      <rect x="16" y="16" width="698" height="254" rx="10" fill="#1d335f" opacity=".26"/>
+      <g opacity=".55">
+        <rect x="24" y="24" width="208" height="238" rx="12" fill="#ffffff" opacity=".18"/>
+        <rect x="248" y="24" width="208" height="238" rx="12" fill="#ffffff" opacity=".14"/>
+        <rect x="472" y="24" width="224" height="238" rx="12" fill="#ffffff" opacity=".16"/>
+      </g>
+      <rect x="336" y="26" width="58" height="252" rx="10" fill="#d8e3fb" opacity=".38"/>
+    </g>
+  </g>
+  <g opacity=".8">
+    <rect x="118" y="570" width="964" height="76" rx="18" fill="#0a1020"/>
+    <path d="M220 570h760v76H220z" fill="#121c33" opacity=".72"/>
+  </g>
+</svg>

@@ -77,7 +77,8 @@
     {
       id: "store",
       name: "Loja",
-      priceLabel: "Preço configurável",
+      launchPrice: "R$ 197",
+      regularPrice: "R$ 297",
       description: "Loja virtual para apresentar produtos e receber interessados.",
       benefits: ["Vitrine de produtos", "Página responsiva", "CTA de atendimento"],
       cta: "Selecionar Loja",
@@ -86,7 +87,8 @@
     {
       id: "presence",
       name: "Presença",
-      priceLabel: "Preço configurável",
+      launchPrice: "R$ 297",
+      regularPrice: "R$ 447",
       description: "Loja virtual com site institucional para fortalecer a marca.",
       benefits: ["Loja virtual", "Site portfólio", "Página sobre a loja"],
       cta: "Selecionar Presença",
@@ -96,7 +98,8 @@
     {
       id: "complete",
       name: "Negócio Completo",
-      priceLabel: "Preço configurável",
+      launchPrice: "R$ 397",
+      regularPrice: "R$ 597",
       description: "Pacote com presença online e um mês do plano básico AutoZap incluído.",
       benefits: ["Loja virtual", "Site institucional", "1 mês de AutoZap básico"],
       cta: "Selecionar pacote",
@@ -178,6 +181,7 @@
     var snapshot = JSON.parse(JSON.stringify(source || {}));
     if (snapshot.identity) {
       delete snapshot.identity.imageDataUrl;
+      delete snapshot.identity.logoPngDataUrl;
       delete snapshot.identity.imageBase64;
       delete snapshot.identity.apiRaw;
       if (Array.isArray(snapshot.identity.mockups)) {
@@ -433,7 +437,7 @@
   function renderPresentationVisual() {
     var identity = getIdentity();
     var logo = brandAssetMarkup(identity);
-    var imageNote = identity.imageDataUrl ? '<small class="asset-status success">Imagem gerada pelo servidor AutoZap Start.</small>' : '<small class="asset-status warning">Imagem da API nao retornou agora. Exibindo previa SVG provisoria.</small>';
+    var imageNote = (identity.logoPngDataUrl || identity.imageDataUrl) ? '<small class="asset-status success">Logo rasterizada em PNG e aplicada nos mockups.</small>' : '<small class="asset-status warning">Logo local provisoria. A apresentação segue com os assets predefinidos.</small>';
     return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo respeita nome, estilo, produtos, mensagem e cores escolhidas no projeto.") +
       '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logo + imageNote + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
@@ -454,13 +458,14 @@
   function renderInventory() {
     var stockButtonLabel = project.inventory.loading ? "Consultando fornecedores..." : "Gerar sugest\u00e3o de estoque";
     return header("Primeiro estoque", "Monte uma sugest\u00e3o inicial de pedido.", "Este m\u00f3dulo est\u00e1 preparado para integra\u00e7\u00e3o com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
-      '<div class="inventory-card"><label>Quanto pretende investir?<select data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></label><div class="chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div><label>Endere\u00e7o para entrega futura<textarea data-field="inventory.address" placeholder="Informe depois ou deixe observa\u00e7\u00f5es iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></label><button class="ghost-action" type="button" data-action="generate-stock" ' + (project.inventory.loading ? "disabled" : "") + '>' + escapeHtml(stockButtonLabel) + '</button>' + inventorySuggestion() + '<p class="helper-note">Este bloco consulta o Portal do Fornecedor pela API do AutoZap Start. Se ainda n\u00e3o houver fornecedor cadastrado, o pedido fica preparado para cota\u00e7\u00e3o futura sem inventar fornecedor.</p></div>' +
+      '<div class="inventory-card premium-inventory-card"><div class="inventory-hero"><span class="status-pill">Pedido inicial</span><h3>Monte uma sugest\u00e3o inicial de pedido</h3><p>Escolha o investimento, marque as categorias e deixe o endere\u00e7o preparado para uma futura entrega ao fornecedor.</p></div><div class="inventory-layout"><div class="inventory-form-stack"><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Investimento</span><strong>Quanto pretende investir?</strong><small>Use essa faixa para sugerir um mix coerente de itens.</small></div><select class="inventory-control" data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></section><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Categorias</span><strong>O que entra no pedido?</strong><small>Toque nas op\u00e7\u00f5es para selecionar um ou mais grupos de produto.</small></div><div class="chip-row inventory-chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div></section><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Entrega futura</span><strong>Endere\u00e7o para entrega futura</strong><small>Opcional neste momento. O preenchimento pode ser conclu\u00eddo depois.</small></div><textarea class="inventory-control inventory-textarea" data-field="inventory.address" placeholder="Informe depois ou deixe observa\u00e7\u00f5es iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></section><button class="ghost-action inventory-action" type="button" data-action="generate-stock" ' + (project.inventory.loading ? "disabled" : "") + '>' + escapeHtml(stockButtonLabel) + '</button><p class="helper-note inventory-helper">Este bloco consulta o Portal do Fornecedor pela API do AutoZap Start. Se ainda n\u00e3o houver fornecedor cadastrado, o pedido fica preparado para cota\u00e7\u00e3o futura sem inventar fornecedor.</p></div><aside class="inventory-preview">' + inventorySuggestion() + '</aside></div></div>' +
       actions("Continuar", true);
   }
 
   function renderPlans() {
     return header("Presença online", "Você tem interesse em criar sua presença online?", "Produtos digitais opcionais, configuráveis e de compra única. Sem preço fixo no código.") +
-      '<div class="plan-grid">' + planConfig.map(function(plan) { return '<article class="plan-card ' + (plan.highlight ? "highlight" : "") + '"><span class="status-pill">' + escapeHtml(plan.priceLabel) + '</span><strong>' + escapeHtml(plan.name) + '</strong><small>' + escapeHtml(plan.description) + '</small><ul>' + plan.benefits.map(function(benefit) { return '<li>' + escapeHtml(benefit) + '</li>'; }).join("") + '</ul><button class="builder-secondary" type="button" data-plan="' + escapeAttr(plan.id) + '">' + escapeHtml(plan.cta) + '</button></article>'; }).join("") + '</div>' +
+      '<div class="plan-pricing-table" role="table" aria-label="Tabela de preços de lançamento e preço normal"><div class="pricing-row pricing-head" role="row"><span role="columnheader">Produto</span><span role="columnheader">Preço de lançamento</span><span role="columnheader">Preço normal</span></div>' + planConfig.map(function(plan) { return '<div class="pricing-row ' + (plan.highlight ? "highlight" : "") + '" role="row"><strong role="rowheader">' + escapeHtml(plan.name) + '</strong><span role="cell" class="launch-price">' + escapeHtml(plan.launchPrice) + '</span><span role="cell" class="regular-price">' + escapeHtml(plan.regularPrice) + '</span></div>'; }).join("") + '</div>' +
+      '<div class="plan-grid">' + planConfig.map(function(plan) { return '<article class="plan-card ' + (plan.highlight ? "highlight" : "") + '"><div class="plan-card-top"><span class="status-pill">' + escapeHtml(plan.highlight ? "Mais escolhido" : "Compra única") + '</span><strong>' + escapeHtml(plan.name) + '</strong><small>' + escapeHtml(plan.description) + '</small></div><div class="plan-price-block"><div><span>Preço de lançamento</span><b>' + escapeHtml(plan.launchPrice) + '</b></div><div><span>Preço normal</span><em>' + escapeHtml(plan.regularPrice) + '</em></div></div><ul>' + plan.benefits.map(function(benefit) { return '<li>' + escapeHtml(benefit) + '</li>'; }).join("") + '</ul><button class="builder-secondary" type="button" data-plan="' + escapeAttr(plan.id) + '">' + escapeHtml(plan.cta) + '</button></article>'; }).join("") + '</div>' +
       '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-plans">Pular</button><button class="builder-primary" type="button" data-action="next">Continuar</button></div></section>';
   }
 
@@ -652,6 +657,7 @@
     if (!api || typeof api.generateIdentity !== "function") {
       project.identity = fallback;
       project.apiStatus.identity = "api-client-unavailable";
+      await ensurePresentationAssets(fallback);
       markDone("slogan");
       recordIdentityGeneration();
       saveProject();
@@ -689,31 +695,72 @@
   }
 
   async function generateVisualImage(api) {
-    if (!api || typeof api.generateStartImage !== "function") {
-      project.apiStatus.image = "image-client-unavailable";
-      project.apiStatus.mockups = "image-client-unavailable";
-      return null;
-    }
     var identity = project.identity || generateIdentityMock();
     try {
-      var response = await api.generateStartImage(imagePayload(identity));
-      var image = normalizeImageResponse(response);
-      if (!image) {
-        project.apiStatus.image = response && (response.message || response.error) || "image_generation_failed";
-        return null;
+      var image = null;
+      if (api && typeof api.generateStartImage === "function") {
+        var response = await api.generateStartImage(imagePayload(identity));
+        image = normalizeImageResponse(response);
+        if (!image) {
+          project.apiStatus.image = response && (response.message || response.error) || "image_generation_failed";
+        } else {
+          identity.imageDataUrl = image.imageDataUrl;
+          identity.imageMimeType = image.mimeType || "image/png";
+          identity.imageModel = image.model || "";
+          identity.imageSource = "autozap-start-image-api";
+          project.apiStatus.image = "connected";
+        }
+      } else {
+        project.apiStatus.image = "image-client-unavailable";
       }
-      identity.imageDataUrl = image.imageDataUrl;
-      identity.imageMimeType = image.mimeType || "image/png";
-      identity.imageModel = image.model || "";
-      identity.imageSource = "autozap-start-image-api";
-      project.identity = identity;
-      project.apiStatus.image = "connected";
-      await generateVisualMockups(api, identity);
+      await ensurePresentationAssets(identity);
       return image;
     } catch (error) {
       project.apiStatus.image = error && error.message || "image_generation_failed";
+      await ensurePresentationAssets(identity);
       return null;
     }
+  }
+
+  async function ensurePresentationAssets(identity) {
+    if (!identity) return null;
+    if (!identity.logoPngDataUrl) {
+      identity.logoPngDataUrl = identity.imageDataUrl || await rasterizeLogoToPng(identity);
+    }
+    identity.mockups = staticMockupSpecs();
+    project.apiStatus.mockups = "static-assets";
+    project.identity = identity;
+    saveProject();
+    return identity;
+  }
+
+  async function rasterizeLogoToPng(identity) {
+    var svg = ensureLogoSvg(identity || getIdentity());
+    var blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    try {
+      var image = await loadImageFromUrl(url);
+      var canvas = document.createElement("canvas");
+      canvas.width = 720;
+      canvas.height = 260;
+      var context = canvas.getContext("2d");
+      if (!context) return "";
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/png");
+    } catch (error) {
+      return "";
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function loadImageFromUrl(src) {
+    return new Promise(function(resolve, reject) {
+      var image = new Image();
+      image.onload = function() { resolve(image); };
+      image.onerror = reject;
+      image.src = src;
+    });
   }
 
   async function generateVisualMockups(api, identity) {
@@ -994,15 +1041,17 @@
   }
 
   function brandAssetMarkup(identity) {
-    if (identity.imageDataUrl) {
-      return '<div class="generated-logo visual-logo image-logo"><img src="' + escapeAttr(identity.imageDataUrl) + '" alt="Logotipo gerado para ' + escapeAttr(identity.name) + '"></div>';
+    var logoSrc = identity.logoPngDataUrl || identity.imageDataUrl;
+    if (logoSrc) {
+      return '<div class="generated-logo visual-logo image-logo"><img src="' + escapeAttr(logoSrc) + '" alt="Logotipo gerado para ' + escapeAttr(identity.name) + '"></div>';
     }
     return logoMarkup(ensureLogoSvg(identity));
   }
 
   function renderBrandMockups(identity, logoMarkupText) {
     var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
-    var real = mockupsByType(identity.mockups || []);
+    var mockups = identity.mockups && identity.mockups.length ? identity.mockups : staticMockupSpecs();
+    var real = mockupsByType(mockups);
     var storefront = real.storefront ? realMockupCard(real.storefront, "storefront", identity) : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
     var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt", identity) : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
     var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card", identity) : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
@@ -1019,6 +1068,17 @@
     ].join("");
   }
 
+  function staticMockupSpecs() {
+    return [
+      { type: "storefront", title: "Fachada real da loja", imageDataUrl: "./assets/mockups/storefront.svg" },
+      { type: "tshirt", title: "Camiseta da equipe", imageDataUrl: "./assets/mockups/tshirt.svg" },
+      { type: "business-card", title: "Cartao de visita", imageDataUrl: "./assets/mockups/business-card.svg" },
+      { type: "bag", title: "Sacola e embalagem", imageDataUrl: "./assets/mockups/bag.svg" },
+      { type: "social-post", title: "Post para redes sociais", imageDataUrl: "./assets/mockups/social-post.svg" },
+      { type: "featured-products", title: "Produtos em destaque", imageDataUrl: "./assets/mockups/featured-products.svg" }
+    ];
+  }
+
   function mockupsByType(mockups) {
     return mockups.reduce(function(index, item) {
       if (item && item.type) index[item.type] = item;
@@ -1027,12 +1087,13 @@
   }
 
   function realMockupCard(mockup, modifier, identity) {
-    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem gerada pela API com logo original aplicada</small></div></article>';
+    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem local com logo original aplicada</small></div></article>';
   }
 
   function realLogoOverlay(identity, modifier) {
-    if (identity && identity.imageDataUrl) {
-      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(identity.imageDataUrl) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
+    var logoSrc = identity && (identity.logoPngDataUrl || identity.imageDataUrl);
+    if (logoSrc) {
+      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
     }
     return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + logoMarkup(ensureLogoSvg(identity || getIdentity())) + '</div>';
   }
@@ -1128,10 +1189,12 @@
 
   function inventorySuggestion() {
     var suggestion = project.inventory.suggestion;
-    if (!suggestion) return "";
+    if (!suggestion) {
+      return '<div class="summary-panel inventory-suggestion inventory-suggestion-empty"><span class="status-pill">Prévia</span><strong>Sua sugestão vai aparecer aqui</strong><p>Quando voc\u00ea gerar a estimativa, este painel mostra fornecedor, itens, quantidades e a leitura inicial do pedido.</p><ul><li><span>Investimento</span><b>Selecionado no topo</b></li><li><span>Categorias</span><b>Mix do estoque</b></li><li><span>Endereço</span><b>Opcional agora</b></li></ul><small>Sem gerar nada ainda, voc\u00ea j\u00e1 pode revisar o fluxo e voltar depois.</small></div>';
+    }
     var label = suggestion.source === "portal-fornecedor-api" ? "Fornecedor conectado" : suggestion.source === "api-empty" ? "API conectada sem fornecedor" : "Fallback local identificado";
-    var items = suggestion.items && suggestion.items.length ? '<ul>' + suggestion.items.map(function(item) { return '<li>' + escapeHtml(item.category) + ': ' + item.quantity + ' unidades</li>'; }).join("") + '</ul>' : '<p>Nenhum item real retornado pelo Portal do Fornecedor ainda.</p>';
-    return '<div class="summary-panel"><span class="status-pill">' + escapeHtml(label) + '</span><strong>Pedido ' + escapeHtml(suggestion.orderId) + '</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p>' + items + '<small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
+    var items = suggestion.items && suggestion.items.length ? '<ul class="inventory-items">' + suggestion.items.map(function(item) { return '<li><span>' + escapeHtml(item.category) + '</span><b>' + item.quantity + ' un.</b></li>'; }).join("") + '</ul>' : '<p class="inventory-empty-copy">Nenhum item real retornado pelo Portal do Fornecedor ainda.</p>';
+    return '<div class="summary-panel inventory-suggestion"><div class="inventory-suggestion-head"><span class="status-pill">' + escapeHtml(label) + '</span><strong>Pedido ' + escapeHtml(suggestion.orderId) + '</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p></div>' + items + '<small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
   }
 
   function downloadProject(type) {

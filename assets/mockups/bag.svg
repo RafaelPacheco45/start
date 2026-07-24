@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Sacola e embalagem">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop offset="0" stop-color="#f7fbff"/>
+      <stop offset="1" stop-color="#e4edf9"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef3fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="260" cy="220" r="164" fill="#2f6bff" opacity=".08"/>
+  <circle cx="948" cy="210" r="184" fill="#0faa62" opacity=".08"/>
+  <g transform="translate(382 126)">
+    <ellipse cx="220" cy="588" rx="170" ry="34" fill="#0f172a" opacity=".15"/>
+    <path d="M114 176h212c28 0 54 22 58 50l34 248c4 30-18 56-48 56H70c-30 0-52-26-48-56l34-248c4-28 30-50 58-50z" fill="#ffffff" opacity=".22"/>
+    <path d="M126 192h188c22 0 41 18 44 40l28 216c3 24-14 44-38 44H92c-24 0-41-20-38-44l28-216c3-22 22-40 44-40z" fill="url(#bag)"/>
+    <path d="M178 160c0-42 18-70 42-70s42 28 42 70" fill="none" stroke="#c8d7ef" stroke-width="16" stroke-linecap="round"/>
+    <rect x="132" y="262" width="176" height="132" rx="22" fill="#edf4ff"/>
+    <rect x="154" y="286" width="134" height="18" rx="9" fill="#2f6bff" opacity=".18"/>
+    <rect x="154" y="318" width="98" height="14" rx="7" fill="#0faa62" opacity=".18"/>
+    <rect x="154" y="346" width="84" height="14" rx="7" fill="#07133f" opacity=".12"/>
+    <rect x="386" y="250" width="126" height="170" rx="18" fill="#f5d7a8"/>
+    <rect x="404" y="270" width="90" height="120" rx="14" fill="#fff7ea"/>
+    <rect x="410" y="290" width="78" height="12" rx="6" fill="#2f6bff" opacity=".16"/>
+  </g>
+</svg>
