@@ -181,20 +181,13 @@
     var snapshot = JSON.parse(JSON.stringify(source || {}));
     if (snapshot.identity) {
       delete snapshot.identity.imageDataUrl;
-      delete snapshot.identity.logoPngDataUrl;
       delete snapshot.identity.imageBase64;
       delete snapshot.identity.apiRaw;
       if (Array.isArray(snapshot.identity.mockups)) {
         snapshot.identity.mockups = snapshot.identity.mockups.map(function(mockup) {
-          var copy = Object.assign({}, mockup);
-          delete copy.imageDataUrl;
-          delete copy.imageBase64;
-          return copy;
+          return Object.assign({}, mockup);
         });
       }
-    }
-    if (compact && snapshot.identity) {
-      snapshot.identity.mockups = [];
     }
     return snapshot;
   }
@@ -437,7 +430,7 @@
   function renderPresentationVisual() {
     var identity = getIdentity();
     var logo = brandAssetMarkup(identity);
-    var imageNote = (identity.logoPngDataUrl || identity.imageDataUrl) ? '<small class="asset-status success">Logo rasterizada em PNG e aplicada nos mockups.</small>' : '<small class="asset-status warning">Logo local provisoria. A apresentação segue com os assets predefinidos.</small>';
+    var imageNote = (identity.logoPngDataUrl || identity.imageDataUrl) ? '<small class="asset-status success">Logo rasterizada em PNG e aplicada nos mockups.</small>' : '<small class="asset-status warning">Logo provisoria. A apresentacao segue com a versao de espera.</small>';
     return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo respeita nome, estilo, produtos, mensagem e cores escolhidas no projeto.") +
       '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logo + imageNote + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
@@ -636,6 +629,20 @@
     return !project.error;
   }
 
+  function identitySignature() {
+    return JSON.stringify({
+      name: project.brand.name || "",
+      city: project.brand.city || "",
+      uf: project.brand.uf || "",
+      style: project.brand.style || "",
+      products: project.brand.products.slice().sort(),
+      colors: project.brand.colors.slice(),
+      logoStyle: project.brand.logoStyle || "",
+      message: project.brand.message || "",
+      slogan: project.brand.slogan || ""
+    });
+  }
+
   function generateIdentityMock() {
     var name = project.brand.name.trim() || "SmartCell";
     return {
@@ -647,6 +654,7 @@
       slogan: project.brand.slogan || suggestedSlogans()[0],
       files: ["brand-summary.json", "logo.svg", "social-materials.json"],
       source: "local-fallback",
+      cacheKey: identitySignature(),
       mock: true
     };
   }
@@ -698,6 +706,19 @@
     var identity = project.identity || generateIdentityMock();
     try {
       var image = null;
+      var signature = identitySignature();
+      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length) {
+        await ensurePresentationAssets(identity);
+        project.apiStatus.image = identity.imageSource === "autozap-start-image-api" ? "cached" : "local-cached";
+        project.apiStatus.mockups = "cached";
+        project.identity = identity;
+        saveProject();
+        return identity.imageDataUrl ? {
+          imageDataUrl: identity.imageDataUrl,
+          mimeType: identity.imageMimeType || "image/png",
+          model: identity.imageModel || ""
+        } : null;
+      }
       if (api && typeof api.generateStartImage === "function") {
         var response = await api.generateStartImage(imagePayload(identity));
         image = normalizeImageResponse(response);
@@ -708,12 +729,16 @@
           identity.imageMimeType = image.mimeType || "image/png";
           identity.imageModel = image.model || "";
           identity.imageSource = "autozap-start-image-api";
+          identity.cacheKey = signature;
           project.apiStatus.image = "connected";
         }
       } else {
         project.apiStatus.image = "image-client-unavailable";
       }
       await ensurePresentationAssets(identity);
+      if (image) {
+        await generateVisualMockups(api, identity);
+      }
       return image;
     } catch (error) {
       project.apiStatus.image = error && error.message || "image_generation_failed";
@@ -727,8 +752,6 @@
     if (!identity.logoPngDataUrl) {
       identity.logoPngDataUrl = identity.imageDataUrl || await rasterizeLogoToPng(identity);
     }
-    identity.mockups = staticMockupSpecs();
-    project.apiStatus.mockups = "static-assets";
     project.identity = identity;
     saveProject();
     return identity;
@@ -764,13 +787,22 @@
   }
 
   async function generateVisualMockups(api, identity) {
+    identity = identity || project.identity || generateIdentityMock();
+    var signature = identitySignature();
+    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length) {
+      project.apiStatus.mockups = "cached";
+      project.identity = identity;
+      saveProject();
+      return identity.mockups;
+    }
     if (!api || typeof api.generateStartImage !== "function") {
-      project.apiStatus.mockups = "image-client-unavailable";
-      return [];
+      project.apiStatus.mockups = Array.isArray(identity.mockups) && identity.mockups.length ? "cached" : "image-client-unavailable";
+      return identity.mockups || [];
     }
     var mockups = [];
     var specs = mockupImageSpecs(identity);
     var concurrency = 2;
+    if (!identity.logoPngDataUrl) await ensurePresentationAssets(identity);
     for (var index = 0; index < specs.length; index += concurrency) {
       var batch = specs.slice(index, index + concurrency);
       var results = await Promise.all(batch.map(function(spec) {
@@ -782,6 +814,8 @@
       if (mockups.length) {
         project.apiStatus.mockups = mockups.length + "/" + specs.length;
         identity.mockups = mockups.slice();
+        identity.mockupsGeneratedAt = new Date().toISOString();
+        identity.cacheKey = signature;
         project.identity = identity;
         saveProject();
       }
@@ -792,6 +826,10 @@
       project.apiStatus.mockups = "connected";
     }
     identity.mockups = mockups;
+    if (mockups.length === specs.length) {
+      identity.mockupsGeneratedAt = new Date().toISOString();
+      identity.cacheKey = signature;
+    }
     project.identity = identity;
     saveProject();
     return mockups;
@@ -852,7 +890,7 @@
   }
 
   function mockupImagePayload(identity, spec) {
-    var logoImageReference = compactImageDataUrl(identity.imageDataUrl);
+    var logoImageReference = identity.logoPngDataUrl || identity.imageDataUrl || "";
     var hasLogoReference = Boolean(logoImageReference);
     var prompt = [
       "Nao crie, nao escreva e nao redesenhe logotipo ou nome da marca dentro da imagem. O site vai aplicar a logo original por cima depois.",
@@ -879,11 +917,6 @@
       referenceImageDataUrl: logoImageReference,
       source: "autozap-start-mockup-" + spec.type
     };
-  }
-
-  function compactImageDataUrl(value) {
-    var text = typeof value === "string" ? value : "";
-    return text.length && text.length <= 160000 ? text : "";
   }
 
   function imagePayload(identity) {
@@ -1050,7 +1083,7 @@
 
   function renderBrandMockups(identity, logoMarkupText) {
     var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
-    var mockups = identity.mockups && identity.mockups.length ? identity.mockups : staticMockupSpecs();
+    var mockups = Array.isArray(identity.mockups) ? identity.mockups : [];
     var real = mockupsByType(mockups);
     var storefront = real.storefront ? realMockupCard(real.storefront, "storefront", identity) : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
     var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt", identity) : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
@@ -1068,17 +1101,6 @@
     ].join("");
   }
 
-  function staticMockupSpecs() {
-    return [
-      { type: "storefront", title: "Fachada real da loja", imageDataUrl: "./assets/mockups/storefront.svg" },
-      { type: "tshirt", title: "Camiseta da equipe", imageDataUrl: "./assets/mockups/tshirt.svg" },
-      { type: "business-card", title: "Cartao de visita", imageDataUrl: "./assets/mockups/business-card.svg" },
-      { type: "bag", title: "Sacola e embalagem", imageDataUrl: "./assets/mockups/bag.svg" },
-      { type: "social-post", title: "Post para redes sociais", imageDataUrl: "./assets/mockups/social-post.svg" },
-      { type: "featured-products", title: "Produtos em destaque", imageDataUrl: "./assets/mockups/featured-products.svg" }
-    ];
-  }
-
   function mockupsByType(mockups) {
     return mockups.reduce(function(index, item) {
       if (item && item.type) index[item.type] = item;
@@ -1087,7 +1109,7 @@
   }
 
   function realMockupCard(mockup, modifier, identity) {
-    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem local com logo original aplicada</small></div></article>';
+    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem gerada e salva com logo original aplicada</small></div></article>';
   }
 
   function realLogoOverlay(identity, modifier) {
