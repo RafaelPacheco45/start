@@ -835,7 +835,30 @@
     return mockups;
   }
 
+  // Fotos-base reais e curadas (nao geradas por IA) para os tipos que ja tem
+  // acervo pronto em assets/mockups/. A logo entra por cima via CSS
+  // (.overlay-storefront, .overlay-tshirt, .overlay-business-card,
+  // .overlay-bag em start-app.css), entao aqui so precisamos da foto de
+  // fundo — nenhuma chamada de API e necessaria para esses tipos.
+  var CURATED_MOCKUP_ASSETS = {
+    storefront: "./assets/mockups/loja-branca.png",
+    tshirt: "./assets/mockups/camiseta-branca.png",
+    "business-card": "./assets/mockups/cartao-branco.png",
+    bag: "./assets/mockups/sacola-branca.png"
+  };
+
   async function generateSingleMockup(api, identity, spec) {
+    var curatedAsset = CURATED_MOCKUP_ASSETS[spec.type];
+    if (curatedAsset) {
+      return {
+        type: spec.type,
+        title: spec.title,
+        imageDataUrl: curatedAsset,
+        mimeType: "image/png",
+        model: "curated-asset",
+        source: "autozap-start-curated-mockup"
+      };
+    }
     try {
       var response = await api.generateStartImage(mockupImagePayload(identity, spec));
       var image = normalizeImageResponse(response);
