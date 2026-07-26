@@ -629,8 +629,15 @@
     return !project.error;
   }
 
+  // Muda esse valor sempre que a logica de geracao dos mockups mudar (ex.:
+  // trocou fotos-base, mudou o jeito de compor a logo). Isso invalida
+  // automaticamente qualquer identity.mockups salvo no localStorage de antes
+  // da mudanca, sem precisar o usuario limpar o navegador na mao.
+  var MOCKUP_SCHEMA_VERSION = "curated-assets-v1";
+
   function identitySignature() {
     return JSON.stringify({
+      mockupSchemaVersion: MOCKUP_SCHEMA_VERSION,
       name: project.brand.name || "",
       city: project.brand.city || "",
       uf: project.brand.uf || "",
