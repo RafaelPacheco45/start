@@ -633,7 +633,7 @@
   // trocou fotos-base, mudou o jeito de compor a logo). Isso invalida
   // automaticamente qualquer identity.mockups salvo no localStorage de antes
   // da mudanca, sem precisar o usuario limpar o navegador na mao.
-  var MOCKUP_SCHEMA_VERSION = "dark-light-variant-v1";
+  var MOCKUP_SCHEMA_VERSION = "dark-light-variant-v2";
 
   function identitySignature() {
     return JSON.stringify({
@@ -863,18 +863,17 @@
   };
 
   function paletteIsLight(colors) {
-    var list = Array.isArray(colors) ? colors : [];
-    var total = 0, count = 0;
-    list.forEach(function(hex) {
-      var c = String(hex || "").trim().replace("#", "");
-      if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
-      if (!/^[0-9a-f]{6}$/i.test(c)) return;
-      var r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
-      total += (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      count++;
-    });
-    if (!count) return false;
-    return (total / count) > 0.6;
+    // Usa so a cor Principal (colors[0], o primeiro campo de cor da tela de
+    // paleta) como sinal de decisao. Tirar a media das 3 cores nao funciona
+    // bem na pratica: a maioria das paletas tem 1 cor clara e 2 escuras de
+    // proposito (contraste), entao a media quase nunca fica "clara" mesmo
+    // quando o usuario escolhe deliberadamente um branco como cor principal.
+    var main = Array.isArray(colors) ? colors[0] : null;
+    var c = String(main || "").trim().replace("#", "");
+    if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
+    if (!/^[0-9a-f]{6}$/i.test(c)) return false;
+    var r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+    return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.6;
   }
 
   async function generateSingleMockup(api, identity, spec) {
@@ -1155,16 +1154,10 @@
 
   function realLogoOverlay(identity, modifier) {
     var logoSrc = identity && (identity.logoPngDataUrl || identity.imageDataUrl);
-    var content = logoSrc
-      ? '<img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '">'
-      : logoMarkup(ensureLogoSvg(identity || getIdentity()));
-    var markup = '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + content + '</div>';
-    // O cartao de visita mostra dois cartoes na foto: um deitado na pilha ao
-    // fundo e outro em pe na frente. A logo precisa aparecer nos dois.
-    if (modifier === "business-card") {
-      markup += '<div class="real-brand-overlay overlay-business-card-back">' + content + '</div>';
+    if (logoSrc) {
+      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
     }
-    return markup;
+    return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + logoMarkup(ensureLogoSvg(identity || getIdentity())) + '</div>';
   }
 
   function sanitizeColor(value, fallback) {
