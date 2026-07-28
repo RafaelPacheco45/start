@@ -953,7 +953,6 @@
       "Estilo: " + (project.brand.style || "moderno") + ".",
       "Personalidade da marca: " + (project.brand.message || "confianca e tecnologia") + ".",
       "Cores principais: " + project.brand.colors.join(", ") + ".",
-      "Fundo transparente.",
       "Crie um conceito visual genuinamente original e especifico para esta marca. Evite iconografia generica e clicheis do setor (por exemplo, nao repita o desenho classico de celular com ondas de sinal/wifi ao lado). Cada geracao deve ser uma interpretacao visual diferente.",
       "A logo deve funcionar comercialmente em fachada de loja, cartao de visita, camiseta e sacola."
     ].join(" ");
