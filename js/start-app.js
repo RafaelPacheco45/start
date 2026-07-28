@@ -12,6 +12,7 @@
   var FREE_GENERATION_LIMIT = 1;
   var GOV_MEI_URL = "https://www.gov.br/empresas-e-negocios/pt-br/empreendedor";
   var AUTOZAP_URL = "https://autozap.log.br";
+  var AUTOZAP_SALES_EMAIL = "suporte@autozap.log.br";
 
   var stateOrder = [
     "brand-name",
@@ -456,6 +457,22 @@
       actions("Continuar", true);
   }
 
+  function openPlanInterestEmail(planId) {
+    var plan = planConfig.filter(function(item) { return item.id === planId; })[0];
+    if (!plan) return;
+    var storeName = project.brand.name.trim() || "minha loja";
+    var subject = "Tenho interesse no plano " + plan.name + " - " + storeName;
+    var body = [
+      "Olá, equipe AutoZap!",
+      "",
+      "Tenho interesse no plano \"" + plan.name + "\" (" + plan.launchPrice + ") para a loja \"" + storeName + "\".",
+      "",
+      "Enviado pelo AutoZap Start."
+    ].join("\n");
+    var mailtoUrl = "mailto:" + AUTOZAP_SALES_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    window.location.href = mailtoUrl;
+  }
+
   function renderPlans() {
     return header("Presença online", "Você tem interesse em criar sua presença online?", "Produtos digitais opcionais, configuráveis e de compra única. Sem preço fixo no código.") +
       '<div class="plan-pricing-table" role="table" aria-label="Tabela de preços de lançamento e preço normal"><div class="pricing-row pricing-head" role="row"><span role="columnheader">Produto</span><span role="columnheader">Preço de lançamento</span><span role="columnheader">Preço normal</span></div>' + planConfig.map(function(plan) { return '<div class="pricing-row ' + (plan.highlight ? "highlight" : "") + '" role="row"><strong role="rowheader">' + escapeHtml(plan.name) + '</strong><span role="cell" class="launch-price">' + escapeHtml(plan.launchPrice) + '</span><span role="cell" class="regular-price">' + escapeHtml(plan.regularPrice) + '</span></div>'; }).join("") + '</div>' +
@@ -539,6 +556,7 @@
         project.selectedPlan = button.dataset.plan;
         saveProject();
         render();
+        openPlanInterestEmail(button.dataset.plan);
       });
     });
   }
