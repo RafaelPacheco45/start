@@ -905,16 +905,6 @@
         type: "bag",
         title: "Sacola e embalagem",
         prompt: "Crie uma imagem realista de sacola e embalagem de entrega para loja de celulares chamada " + identity.name + ". Deixe a frente da sacola limpa, sem texto ou logotipo, para aplicar a logo depois. Use acabamento premium, embalagem limpa, cores da marca e contexto de acessorios de celular."
-      },
-      {
-        type: "social-post",
-        title: "Post para redes sociais",
-        prompt: "Crie uma imagem realista de mockup de post para Instagram de uma loja de celulares chamada " + identity.name + ". Deixe uma area superior limpa, sem texto ou logotipo, para aplicar a logo depois. Use paleta da marca e uma composicao profissional de promocao de smartphones e acessorios, como se estivesse exibida em uma tela de celular."
-      },
-      {
-        type: "featured-products",
-        title: "Produtos em destaque",
-        prompt: "Crie uma imagem realista de vitrine ou catalogo inicial com produtos em destaque para a loja de celulares " + identity.name + ". Deixe o topo da vitrine ou pagina limpo, sem texto ou logotipo, para aplicar a logo depois. Inclua smartphones, capas, peliculas, carregadores e fones com visual comercial premium."
       }
     ];
   }
@@ -1121,15 +1111,11 @@
     var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt", identity) : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
     var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card", identity) : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
     var bag = real.bag ? realMockupCard(real.bag, "bag", identity) : '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>';
-    var social = real["social-post"] ? realMockupCard(real["social-post"], "social-post", identity) : '<article class="mockup-card social-post-mockup"><div class="post-frame">' + compactLogo + '<strong>Novidades na loja</strong><span>@' + escapeHtml(slugify(identity.name)) + '</span></div><small>Post para redes sociais</small></article>';
-    var featured = real["featured-products"] ? realMockupCard(real["featured-products"], "featured-products", identity) : '<article class="mockup-card phone-mockup"><div class="phone-frame">' + compactLogo + '<strong>Catalogo inicial</strong><small>Produtos em destaque</small></div></article>';
     return [
       storefront,
       tshirt,
       card,
-      bag,
-      social,
-      featured
+      bag
     ].join("");
   }
 
