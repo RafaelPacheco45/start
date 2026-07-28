@@ -756,8 +756,13 @@
 
   async function ensurePresentationAssets(identity) {
     if (!identity) return null;
-    if (!identity.logoPngDataUrl) {
-      identity.logoPngDataUrl = identity.imageDataUrl || await rasterizeLogoToPng(identity);
+    // Se ja existe uma imagem gerada pela IA, ela sempre manda (mesmo que
+    // logoPngDataUrl ja estivesse preenchido com uma versao antiga em cache).
+    // So cai para a rasterizacao local do SVG quando nao ha nenhuma imagem de IA.
+    if (identity.imageDataUrl) {
+      identity.logoPngDataUrl = identity.imageDataUrl;
+    } else if (!identity.logoPngDataUrl) {
+      identity.logoPngDataUrl = await rasterizeLogoToPng(identity);
     }
     project.identity = identity;
     saveProject();
