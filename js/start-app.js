@@ -947,15 +947,15 @@
   function imagePayload(identity) {
     var name = project.brand.name.trim() || identity.name || "SmartCell";
     var prompt = [
-      "Crie uma imagem de logotipo profissional para uma loja de celulares chamada " + name + ".",
-      "Respeite exatamente este estilo visual: " + (project.brand.style || "moderno") + ".",
-      "Tipo de logotipo escolhido: " + (project.brand.logoStyle || "simbolo") + ".",
-      "Mensagem da marca: " + (project.brand.message || "confianca e tecnologia") + ".",
-      "Produtos vendidos: " + (project.brand.products.length ? project.brand.products.join(", ") : "celulares e acessorios") + ".",
-      "Use como paleta principal estas cores: " + project.brand.colors.join(", ") + ".",
-      "Fundo totalmente transparente, sem nenhum elemento, textura ou cor de fundo.",
-      "Layout vertical e compacto: icone/simbolo centralizado na parte de cima, nome da loja centralizado logo abaixo, formando um bloco unico proximo de um quadrado (nao alongado na horizontal).",
-      "Crie um logo limpo, utilizavel em loja de celular, perfil de Instagram e site. Evite texto pequeno ilegivel."
+      "Crie uma logo original para uma empresa chamada " + name + ".",
+      "Segmento: loja de celulares e acessorios" + (project.brand.products.length ? " (" + project.brand.products.join(", ") + ")" : "") + ".",
+      "Tipo de logo: " + (project.brand.logoStyle || "simbolo") + ".",
+      "Estilo: " + (project.brand.style || "moderno") + ".",
+      "Personalidade da marca: " + (project.brand.message || "confianca e tecnologia") + ".",
+      "Cores principais: " + project.brand.colors.join(", ") + ".",
+      "Fundo transparente.",
+      "Crie um conceito visual genuinamente original e especifico para esta marca. Evite iconografia generica e clicheis do setor (por exemplo, nao repita o desenho classico de celular com ondas de sinal/wifi ao lado). Cada geracao deve ser uma interpretacao visual diferente.",
+      "A logo deve funcionar comercialmente em fachada de loja, cartao de visita, camiseta e sacola."
     ].join(" ");
     return {
       prompt: prompt,
