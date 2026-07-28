@@ -267,6 +267,7 @@
     project.state = nextState;
     saveProject();
     render();
+    scrollBuilderToTop();
   }
 
   function nextUnfinishedState() {
@@ -576,6 +577,7 @@
     project.error = "";
     saveProject();
     render();
+    scrollBuilderToTop();
   }
 
   function startGeneration() {
@@ -587,6 +589,7 @@
     project.state = "generating";
     saveProject();
     render();
+    scrollBuilderToTop();
   }
 
   function skipSloganAndGenerate() {
@@ -599,6 +602,13 @@
     project.state = "generating";
     saveProject();
     render();
+    scrollBuilderToTop();
+  }
+
+  function scrollBuilderToTop() {
+    // Sempre que troca de pagina/etapa do wizard, a tela deve abrir do topo
+    // em vez de manter a posicao de scroll da etapa anterior.
+    if (typeof window.scrollTo === "function") window.scrollTo(0, 0);
   }
 
   function canGenerateIdentity() {
