@@ -633,7 +633,7 @@
   // trocou fotos-base, mudou o jeito de compor a logo). Isso invalida
   // automaticamente qualquer identity.mockups salvo no localStorage de antes
   // da mudanca, sem precisar o usuario limpar o navegador na mao.
-  var MOCKUP_SCHEMA_VERSION = "dark-light-variant-v2";
+  var MOCKUP_SCHEMA_VERSION = "dark-light-variant-v3";
 
   function identitySignature() {
     return JSON.stringify({
@@ -863,17 +863,21 @@
   };
 
   function paletteIsLight(colors) {
-    // Usa so a cor Principal (colors[0], o primeiro campo de cor da tela de
-    // paleta) como sinal de decisao. Tirar a media das 3 cores nao funciona
-    // bem na pratica: a maioria das paletas tem 1 cor clara e 2 escuras de
-    // proposito (contraste), entao a media quase nunca fica "clara" mesmo
-    // quando o usuario escolhe deliberadamente um branco como cor principal.
-    var main = Array.isArray(colors) ? colors[0] : null;
-    var c = String(main || "").trim().replace("#", "");
-    if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
-    if (!/^[0-9a-f]{6}$/i.test(c)) return false;
-    var r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
-    return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.6;
+    // Usa a cor MAIS CLARA das 3 (nao a media, nem so a Principal): a logo
+    // costuma usar as 3 cores da paleta em partes diferentes do desenho, e
+    // se qualquer uma delas for quase branca, essa parte do desenho some
+    // numa foto-base branca independente de qual e a cor Principal.
+    var list = Array.isArray(colors) ? colors : [];
+    var maxLum = 0;
+    list.forEach(function(hex) {
+      var c = String(hex || "").trim().replace("#", "");
+      if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
+      if (!/^[0-9a-f]{6}$/i.test(c)) return;
+      var r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+      var lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      if (lum > maxLum) maxLum = lum;
+    });
+    return maxLum > 0.75;
   }
 
   async function generateSingleMockup(api, identity, spec) {
