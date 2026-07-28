@@ -1180,7 +1180,18 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid rgba(7, 19, 63, .08);
 }
 .real-image-mockup {
-  min-height: 260px;
+  /* as fotos-base sao quadradas (1254x1254) e a posicao da logo foi
+     calibrada em % contra esse quadrado. Sem aspect-ratio:1 aqui, o card
+     assume a largura da coluna do grid com uma altura fixa (min-height),
+     quase sempre resultando numa caixa mais larga que alta — o
+     object-fit:cover entao corta o topo/base da foto para caber, e as
+     mesmas porcentagens passam a apontar para um lugar errado (a fachada
+     "sobe" ou "desce" dependendo da largura da tela). Mantendo o card
+     sempre quadrado, o corte deixa de acontecer e a calibracao vale para
+     qualquer tamanho de tela.
+  */
+  aspect-ratio: 1;
+  min-height: 0;
   padding: 0;
   background: #07111f;
   color: #fff;
@@ -1271,6 +1282,14 @@ a { color: inherit; text-decoration: none; }
      aqui acompanha a inclinacao real do cartao na foto para a logo parecer
      impressa nele, em vez de flutuando reta por cima. */
   transform: translate(-50%, -50%) rotate(-6.5deg);
+}
+.overlay-business-card-back {
+  /* segundo cartao da foto, deitado na pilha ao fundo — menor e um pouco
+     mais girado que o cartao da frente por causa da perspectiva. */
+  top: 36.6%;
+  left: 40.45%;
+  width: clamp(35px, 11%, 90px);
+  transform: translate(-50%, -50%) rotate(-6deg);
 }
 .overlay-bag {
   top: 59.85%;

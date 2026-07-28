@@ -1136,10 +1136,16 @@
 
   function realLogoOverlay(identity, modifier) {
     var logoSrc = identity && (identity.logoPngDataUrl || identity.imageDataUrl);
-    if (logoSrc) {
-      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
+    var content = logoSrc
+      ? '<img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '">'
+      : logoMarkup(ensureLogoSvg(identity || getIdentity()));
+    var markup = '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + content + '</div>';
+    // O cartao de visita mostra dois cartoes na foto: um deitado na pilha ao
+    // fundo e outro em pe na frente. A logo precisa aparecer nos dois.
+    if (modifier === "business-card") {
+      markup += '<div class="real-brand-overlay overlay-business-card-back">' + content + '</div>';
     }
-    return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + logoMarkup(ensureLogoSvg(identity || getIdentity())) + '</div>';
+    return markup;
   }
 
   function sanitizeColor(value, fallback) {
