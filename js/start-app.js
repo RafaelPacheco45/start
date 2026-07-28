@@ -633,7 +633,7 @@
   // trocou fotos-base, mudou o jeito de compor a logo). Isso invalida
   // automaticamente qualquer identity.mockups salvo no localStorage de antes
   // da mudanca, sem precisar o usuario limpar o navegador na mao.
-  var MOCKUP_SCHEMA_VERSION = "curated-assets-v1";
+  var MOCKUP_SCHEMA_VERSION = "transparent-logo-v1";
 
   function identitySignature() {
     return JSON.stringify({
@@ -958,6 +958,8 @@
       "Mensagem da marca: " + (project.brand.message || "confianca e tecnologia") + ".",
       "Produtos vendidos: " + (project.brand.products.length ? project.brand.products.join(", ") : "celulares e acessorios") + ".",
       "Use como paleta principal estas cores: " + project.brand.colors.join(", ") + ".",
+      "Fundo totalmente transparente, sem nenhum elemento, textura ou cor de fundo.",
+      "Layout vertical e compacto: icone/simbolo centralizado na parte de cima, nome da loja centralizado logo abaixo, formando um bloco unico proximo de um quadrado (nao alongado na horizontal).",
       "Crie um logo limpo, utilizavel em loja de celular, perfil de Instagram e site. Evite texto pequeno ilegivel."
     ].join(" ");
     return {
