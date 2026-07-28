@@ -633,7 +633,7 @@
   // trocou fotos-base, mudou o jeito de compor a logo). Isso invalida
   // automaticamente qualquer identity.mockups salvo no localStorage de antes
   // da mudanca, sem precisar o usuario limpar o navegador na mao.
-  var MOCKUP_SCHEMA_VERSION = "transparent-logo-v1";
+  var MOCKUP_SCHEMA_VERSION = "dark-light-variant-v1";
 
   function identitySignature() {
     return JSON.stringify({
@@ -851,17 +851,36 @@
   // acervo pronto em assets/mockups/. A logo entra por cima via CSS
   // (.overlay-storefront, .overlay-tshirt, .overlay-business-card,
   // .overlay-bag em start-app.css), entao aqui so precisamos da foto de
-  // fundo — nenhuma chamada de API e necessaria para esses tipos.
+  // fundo — nenhuma chamada de API e necessaria para esses tipos. Tem duas
+  // versoes de cada foto (branca/preta) para dar contraste com a paleta:
+  // paleta clara usa fundo escuro (preta) e paleta escura usa fundo claro
+  // (branca), senao a logo pode sumir de contraste na foto.
   var CURATED_MOCKUP_ASSETS = {
-    storefront: "./assets/mockups/loja-branca.png",
-    tshirt: "./assets/mockups/camiseta-branca.png",
-    "business-card": "./assets/mockups/cartao-branco.png",
-    bag: "./assets/mockups/sacola-branca.png"
+    storefront: { light: "./assets/mockups/loja-branca.png", dark: "./assets/mockups/loja-preta.png" },
+    tshirt: { light: "./assets/mockups/camiseta-branca.png", dark: "./assets/mockups/camiseta-preta.png" },
+    "business-card": { light: "./assets/mockups/cartao-branco.png", dark: "./assets/mockups/cartao-preto.png" },
+    bag: { light: "./assets/mockups/sacola-branca.png", dark: "./assets/mockups/sacola-preta.png" }
   };
 
+  function paletteIsLight(colors) {
+    var list = Array.isArray(colors) ? colors : [];
+    var total = 0, count = 0;
+    list.forEach(function(hex) {
+      var c = String(hex || "").trim().replace("#", "");
+      if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
+      if (!/^[0-9a-f]{6}$/i.test(c)) return;
+      var r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+      total += (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      count++;
+    });
+    if (!count) return false;
+    return (total / count) > 0.6;
+  }
+
   async function generateSingleMockup(api, identity, spec) {
-    var curatedAsset = CURATED_MOCKUP_ASSETS[spec.type];
-    if (curatedAsset) {
+    var assetSet = CURATED_MOCKUP_ASSETS[spec.type];
+    if (assetSet) {
+      var curatedAsset = paletteIsLight(project.brand.colors) ? assetSet.dark : assetSet.light;
       return {
         type: spec.type,
         title: spec.title,
