@@ -12,7 +12,7 @@
   var FREE_GENERATION_LIMIT = 1;
   var GOV_MEI_URL = "https://www.gov.br/empresas-e-negocios/pt-br/empreendedor";
   var AUTOZAP_URL = "https://autozap.log.br";
-  var AUTOZAP_SALES_EMAIL = "suporte@autozap.log.br";
+  var AUTOZAP_SALES_EMAIL = "comunicacao@autozap.log.br";
 
   var stateOrder = [
     "brand-name",
