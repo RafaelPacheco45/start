@@ -4,6 +4,7 @@ window.AUTOZAP_START_CONFIG = {
   version: "0.3.0",
   basePath: "./",
   apiBaseUrl: AUTOZAP_API_BASE_URL,
+  siteCheckoutUrl: "",
   mainAutoZapUrl: "https://autozap.log.br",
   onlineStoreHelpUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20ajuda%20para%20criar%20minha%20loja%20online%20%2F%20site.",
   onlineStoreQuoteUrl: "https://wa.me/?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20para%20criar%20minha%20loja%20online%20com%20a%20AutoZap%20Start.",

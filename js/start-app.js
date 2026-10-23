@@ -12,7 +12,6 @@
   var FREE_GENERATION_LIMIT = 1;
   var GOV_MEI_URL = "https://www.gov.br/empresas-e-negocios/pt-br/empreendedor";
   var AUTOZAP_URL = "https://autozap.log.br";
-  var AUTOZAP_SALES_EMAIL = "comunicacao@autozap.log.br";
 
   var stateOrder = [
     "brand-name",
@@ -76,35 +75,16 @@
   var investmentOptions = ["Até R$ 500", "Até R$ 1.000", "Até R$ 2.500", "Até R$ 5.000", "Valor personalizado"];
   var planConfig = [
     {
-      id: "store",
-      name: "Loja",
-      launchPrice: "R$ 197",
-      regularPrice: "R$ 297",
-      description: "Loja virtual para apresentar produtos e receber interessados.",
-      benefits: ["Vitrine de produtos", "Página responsiva", "CTA de atendimento"],
-      cta: "Selecionar Loja",
-      available: true
+      id: "store", name: "Apenas o site", price: "R$ 50", badge: "Compra única",
+      description: "Seu site profissional com a identidade da sua loja.",
+      benefits: ["Sua marca, suas cores e seu logo", "Vitrine de produtos", "Site adaptado para celular", "Botão de atendimento pelo WhatsApp"],
+      cta: "Comprar site por R$ 50"
     },
     {
-      id: "presence",
-      name: "Presença",
-      launchPrice: "R$ 297",
-      regularPrice: "R$ 447",
-      description: "Loja virtual com site institucional para fortalecer a marca.",
-      benefits: ["Loja virtual", "Site portfólio", "Página sobre a loja"],
-      cta: "Selecionar Presença",
-      available: true,
-      highlight: true
-    },
-    {
-      id: "complete",
-      name: "Negócio Completo",
-      launchPrice: "R$ 397",
-      regularPrice: "R$ 597",
-      description: "Pacote com presença online e um mês do plano básico AutoZap incluído.",
-      benefits: ["Loja virtual", "Site institucional", "1 mês de AutoZap básico"],
-      cta: "Selecionar pacote",
-      available: true
+      id: "autozap", name: "Licença AutoZap + 1 site grátis", price: "Site grátis", badge: "Incluído com a licença",
+      description: "Compre sua licença AutoZap e ganhe um site para sua loja.",
+      benefits: ["Licença para gerenciar sua loja", "1 site profissional de presente", "Identidade da sua loja aplicada ao site"],
+      cta: "Ver licenças AutoZap", highlight: true
     }
   ];
 
@@ -118,6 +98,10 @@
   bindLanding();
   bindBuilderDelegation();
   prepareLanding();
+  if (new URLSearchParams(location.search).get("payment") === "return") {
+    showBuilder("plans");
+    window.AutoZapSiteCheckout?.open({api:apiClient(),history:true});
+  }
 
   function defaultProject() {
     return {
@@ -169,6 +153,7 @@
   function saveProject() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project)));
+      delete project.apiStatus.storage;
     } catch (error) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project, true)));
@@ -224,6 +209,8 @@
 
   function bindBuilderDelegation() {
     builder.addEventListener("click", function(event) {
+      var siteButton = event.target.closest("[data-site-checkout]");
+      if(siteButton){event.preventDefault();var identity=getIdentity();window.AutoZapSiteCheckout.open({api:apiClient(),history:siteButton.dataset.siteCheckout==="history",project:{name:identity.name,slogan:identity.slogan,colors:identity.colors,imageDataUrl:identity.logoPngDataUrl||identity.imageDataUrl,city:project.brand.city,description:project.brand.message,products:project.brand.products}});return;}
       var downloadButton = event.target.closest("[data-download]");
       if (downloadButton && builder.contains(downloadButton)) {
         event.preventDefault();
@@ -245,6 +232,7 @@
   }
 
   function startIntro() {
+    var resumeState = nextUnfinishedState();
     project.state = "intro";
     saveProject();
     shell.dataset.mode = "transition";
@@ -257,7 +245,7 @@
     }, 150);
     setTimeout(function() {
       intro.hidden = true;
-      showBuilder(nextUnfinishedState());
+      showBuilder(resumeState);
     }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 300 : 2100);
   }
 
@@ -441,43 +429,31 @@
   }
 
   function renderFormalization() {
-    return header("Etapa opcional", "Sua loja tambem precisa parecer uma empresa de verdade.", "O MEI nao e obrigatorio para criar sua identidade visual. Ele entra aqui como uma decisao de maturidade: quando voce quer vender com mais confianca, negociar melhor e ser levado mais a serio.") +
-      '<article class="formalization-card mei-card"><div class="mei-hero"><span class="status-pill">Opcional</span><h3>Formalizar e uma forma de reduzir desconfianca antes da primeira venda.</h3><p>Quando o cliente percebe que existe uma empresa por tras da marca, a conversa muda. Ele tende a confiar mais no pagamento, na garantia, no pos-venda e na promessa de entrega.</p></div>' +
-      '<div class="mei-impact-grid"><section><span>01</span><strong>Psicologico</strong><p>Uma loja com CNPJ transmite compromisso. Para quem esta comprando celular, acessorio ou assistencia, isso diminui medo de golpe e aumenta seguranca para fechar.</p></section><section><span>02</span><strong>Comercial</strong><p>Fornecedores costumam levar mais a serio quem compra como empresa. O MEI pode facilitar cadastro, nota, recorrencia de compra e relacionamento profissional.</p></section><section><span>03</span><strong>Profissional</strong><p>Separar pessoa fisica de loja ajuda a organizar dinheiro, atendimento, documentos e crescimento. A marca deixa de parecer improviso e passa a parecer negocio.</p></section></div>' +
-      '<div class="mei-checklist"><strong>O que o MEI pode destravar</strong><ul><li>CNPJ para apresentar a loja com mais credibilidade.</li><li>Possibilidade de emitir nota fiscal, conforme regras da sua cidade/estado.</li><li>Conta, Pix e cadastro comercial em nome da empresa.</li><li>Mais clareza para negociar com fornecedores e parceiros.</li><li>Organizacao financeira desde o inicio do projeto.</li></ul></div>' +
-      '<p class="helper-note">Importante: o AutoZap Start nao abre MEI, nao cobra por isso e nao substitui orientacao oficial. O botao leva para o Governo Federal para voce conferir as regras, limites, atividades permitidas e responsabilidades antes de decidir.</p>' +
-      '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="mei-info">Entender no site oficial</button><a class="builder-primary" href="' + GOV_MEI_URL + '" target="_blank" rel="noreferrer">Abrir ou consultar MEI</a><button class="builder-secondary" type="button" data-action="skip-formalization">Pular esta etapa</button></div></article>' +
-      actions("Continuar para estoque", true);
+    return window.AutoZapMei.render();
   }
 
   function renderInventory() {
-    var stockButtonLabel = project.inventory.loading ? "Consultando fornecedores..." : "Gerar sugest\u00e3o de estoque";
-    return header("Primeiro estoque", "Monte uma sugest\u00e3o inicial de pedido.", "Este m\u00f3dulo est\u00e1 preparado para integra\u00e7\u00e3o com o Portal do Fornecedor. Pagamento e Pix devem ser feitos diretamente ao fornecedor.") +
-      '<div class="inventory-card premium-inventory-card"><div class="inventory-hero"><span class="status-pill">Pedido inicial</span><h3>Monte uma sugest\u00e3o inicial de pedido</h3><p>Escolha o investimento, marque as categorias e deixe o endere\u00e7o preparado para uma futura entrega ao fornecedor.</p></div><div class="inventory-layout"><div class="inventory-form-stack"><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Investimento</span><strong>Quanto pretende investir?</strong><small>Use essa faixa para sugerir um mix coerente de itens.</small></div><select class="inventory-control" data-field="inventory.investment">' + options(investmentOptions, project.inventory.investment, "Selecione uma faixa") + '</select></section><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Categorias</span><strong>O que entra no pedido?</strong><small>Toque nas op\u00e7\u00f5es para selecionar um ou mais grupos de produto.</small></div><div class="chip-row inventory-chip-row">' + productOptions.map(function(item) { return '<button class="chip ' + (project.inventory.categories.indexOf(item) >= 0 ? "active" : "") + '" type="button" data-inventory-category="' + escapeAttr(item) + '">' + escapeHtml(item) + '</button>'; }).join("") + '</div></section><section class="inventory-field"><div class="inventory-field-head"><span class="inventory-field-kicker">Entrega futura</span><strong>Endere\u00e7o para entrega futura</strong><small>Opcional neste momento. O preenchimento pode ser conclu\u00eddo depois.</small></div><textarea class="inventory-control inventory-textarea" data-field="inventory.address" placeholder="Informe depois ou deixe observa\u00e7\u00f5es iniciais.">' + escapeHtml(project.inventory.address) + '</textarea></section><button class="ghost-action inventory-action" type="button" data-action="generate-stock" ' + (project.inventory.loading ? "disabled" : "") + '>' + escapeHtml(stockButtonLabel) + '</button><p class="helper-note inventory-helper">Este bloco consulta o Portal do Fornecedor pela API do AutoZap Start. Se ainda n\u00e3o houver fornecedor cadastrado, o pedido fica preparado para cota\u00e7\u00e3o futura sem inventar fornecedor.</p></div><aside class="inventory-preview">' + inventorySuggestion() + '</aside></div></div>' +
-      actions("Continuar", true);
+    return header("Estoque da sua loja", "Encontre os produtos para começar a vender.", "Explore o catálogo dos fornecedores, monte seu carrinho e negocie diretamente com quem vende.") + '<div class="marketplace" data-marketplace></div>' + actions("Continuar", true);
   }
 
-  function openPlanInterestEmail(planId) {
-    var plan = planConfig.filter(function(item) { return item.id === planId; })[0];
-    if (!plan) return;
-    var storeName = project.brand.name.trim() || "minha loja";
-    var subject = "Tenho interesse no plano " + plan.name + " - " + storeName;
-    var body = [
-      "Olá, equipe AutoZap!",
-      "",
-      "Tenho interesse no plano \"" + plan.name + "\" (" + plan.launchPrice + ") para a loja \"" + storeName + "\".",
-      "",
-      "Enviado pelo AutoZap Start."
-    ].join("\n");
-    var mailtoUrl = "mailto:" + AUTOZAP_SALES_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-    window.location.href = mailtoUrl;
+  function siteCheckoutUrl() {
+    var configured = (window.AUTOZAP_START_CONFIG || {}).siteCheckoutUrl || "";
+    try {
+      var url = new URL(configured);
+      var allowed = ["mpago.la", "mercadopago.com.br", "www.mercadopago.com.br"];
+      return url.protocol === "https:" && !url.username && !url.password && allowed.indexOf(url.hostname) >= 0 ? url.href : "";
+    } catch (error) { return ""; }
   }
 
   function renderPlans() {
-    return header("Presença online", "Você tem interesse em criar sua presença online?", "Produtos digitais opcionais, configuráveis e de compra única. Sem preço fixo no código.") +
-      '<div class="plan-pricing-table" role="table" aria-label="Tabela de preços de lançamento e preço normal"><div class="pricing-row pricing-head" role="row"><span role="columnheader">Produto</span><span role="columnheader">Preço de lançamento</span><span role="columnheader">Preço normal</span></div>' + planConfig.map(function(plan) { return '<div class="pricing-row ' + (plan.highlight ? "highlight" : "") + '" role="row"><strong role="rowheader">' + escapeHtml(plan.name) + '</strong><span role="cell" class="launch-price">' + escapeHtml(plan.launchPrice) + '</span><span role="cell" class="regular-price">' + escapeHtml(plan.regularPrice) + '</span></div>'; }).join("") + '</div>' +
-      '<div class="plan-grid">' + planConfig.map(function(plan) { return '<article class="plan-card ' + (plan.highlight ? "highlight" : "") + '"><div class="plan-card-top"><span class="status-pill">' + escapeHtml(plan.highlight ? "Mais escolhido" : "Compra única") + '</span><strong>' + escapeHtml(plan.name) + '</strong><small>' + escapeHtml(plan.description) + '</small></div><div class="plan-price-block"><div><span>Preço de lançamento</span><b>' + escapeHtml(plan.launchPrice) + '</b></div><div><span>Preço normal</span><em>' + escapeHtml(plan.regularPrice) + '</em></div></div><ul>' + plan.benefits.map(function(benefit) { return '<li>' + escapeHtml(benefit) + '</li>'; }).join("") + '</ul><button class="builder-secondary" type="button" data-plan="' + escapeAttr(plan.id) + '">' + escapeHtml(plan.cta) + '</button></article>'; }).join("") + '</div>' +
-      '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-action="skip-plans">Pular</button><button class="builder-primary" type="button" data-action="next">Continuar</button></div></section>';
+    var checkout = siteCheckoutUrl();
+    return header("Presença online", "Você tem interesse em criar sua presença online?", "Sua identidade é gratuita. Escolha apenas o site ou ganhe um site ao comprar sua licença AutoZap.") +
+      '<div class="plan-grid">' + planConfig.map(function(plan) {
+        var href = plan.id === "autozap" ? AUTOZAP_URL : checkout;
+        var cta = href ? '<a class="builder-primary" data-plan="' + escapeAttr(plan.id) + '" href="' + escapeAttr(href) + '">' + escapeHtml(plan.cta) + '</a>' : '<button class="builder-primary" type="button" data-site-checkout="new">Criar meu site · R$ 50</button>';
+        return '<article class="plan-card ' + (plan.highlight ? "highlight" : "") + '"><div class="plan-card-top"><span class="status-pill">' + escapeHtml(plan.badge) + '</span><strong>' + escapeHtml(plan.name) + '</strong><small>' + escapeHtml(plan.description) + '</small></div><div class="plan-price-block"><div><b>' + escapeHtml(plan.price) + '</b><span>' + (plan.id === "store" ? "Pagamento único pelo Mercado Pago" : "Na compra de uma licença AutoZap") + '</span></div></div><ul>' + plan.benefits.map(function(benefit) { return '<li>' + escapeHtml(benefit) + '</li>'; }).join("") + '</ul>' + cta + '</article>';
+      }).join("") + '</div>' +
+      '<div class="builder-actions"><button class="builder-secondary" type="button" data-action="back">Voltar</button><button class="builder-secondary" type="button" data-site-checkout="history">Minha compra do site</button><button class="builder-secondary" type="button" data-action="skip-plans">Agora não</button></div></section>';
   }
 
   function renderAutoZap() {
@@ -500,6 +476,9 @@
   }
 
   function bindBuilderEvents() {
+    if (window.AutoZapMei && window.AutoZapMei.animate) window.AutoZapMei.animate(builder);
+    var market = builder.querySelector("[data-marketplace]");
+    if (market && window.AutoZapMarket) window.AutoZapMarket.mount(market, apiClient());
     builder.querySelectorAll("[data-field]").forEach(function(field) {
       field.addEventListener("input", function() {
         setPath(project, field.dataset.field, field.value);
@@ -555,8 +534,7 @@
       button.addEventListener("click", function() {
         project.selectedPlan = button.dataset.plan;
         saveProject();
-        render();
-        openPlanInterestEmail(button.dataset.plan);
+        // Preserve the identity before following the selected offer link.
       });
     });
   }
@@ -581,7 +559,7 @@
     if (action === "review") return goTo("presentation");
     if (action === "save-exit") {
       saveProject();
-      alert("Progresso salvo neste navegador.");
+      alert(project.apiStatus.storage ? "O navegador não conseguiu salvar tudo. Baixe seus materiais antes de fechar." : "Progresso salvo neste navegador.");
     }
   }
 
@@ -1085,9 +1063,7 @@
   }
 
   function ensureLogoSvg(identity) {
-    if (!identity.logoSvg) {
-      identity.logoSvg = createLogoSvg(identity.name, identity.colors, identity.slogan, project.brand.logoStyle);
-    }
+    identity.logoSvg = createLogoSvg(identity.name, identity.colors, identity.slogan, project.brand.logoStyle);
     return identity.logoSvg;
   }
 
@@ -1105,7 +1081,7 @@
   }
 
   function logoMarkup(svg) {
-    return '<div class="generated-logo visual-logo">' + svg + '</div>';
+    return '<div class="generated-logo visual-logo image-logo"><img src="data:image/svg+xml;charset=utf-8,' + escapeAttr(encodeURIComponent(svg)) + '" alt="Logotipo"></div>';
   }
 
   function brandAssetMarkup(identity) {
@@ -1214,16 +1190,14 @@
         category: product.category || product.name || categories[index % Math.max(categories.length, 1)] || "Produto",
         quantity: Number(product.suggestedQuantity || product.quantity || 6)
       };
-    }) : categories.slice(0, 5).map(function(category, index) {
-      return { category: category, quantity: (index + 1) * 6 };
-    });
+    }) : [];
     return {
       orderId: "AZS-" + Date.now().toString(36).toUpperCase(),
       supplier: supplier.name || supplier.companyName || supplier.tradeName || "Fornecedor parceiro",
       supplierId: supplier.id || "",
       items: items,
-      paymentNote: "Pagamento diretamente ao fornecedor. Pix do fornecedor.",
-      source: "portal-fornecedor-api",
+      paymentNote: products.length ? "Estimativa para planejamento. Confirme preços e disponibilidade com o fornecedor. Nenhum pedido foi enviado." : "O fornecedor não retornou produtos. Nenhum pedido foi criado ou enviado.",
+      source: products.length ? "portal-fornecedor-api" : "api-empty",
       mock: false
     };
   }
@@ -1233,13 +1207,14 @@
     if (!suggestion) {
       return '<div class="summary-panel inventory-suggestion inventory-suggestion-empty"><span class="status-pill">Prévia</span><strong>Sua sugestão vai aparecer aqui</strong><p>Quando voc\u00ea gerar a estimativa, este painel mostra fornecedor, itens, quantidades e a leitura inicial do pedido.</p><ul><li><span>Investimento</span><b>Selecionado no topo</b></li><li><span>Categorias</span><b>Mix do estoque</b></li><li><span>Endereço</span><b>Opcional agora</b></li></ul><small>Sem gerar nada ainda, voc\u00ea j\u00e1 pode revisar o fluxo e voltar depois.</small></div>';
     }
-    var label = suggestion.source === "portal-fornecedor-api" ? "Fornecedor conectado" : suggestion.source === "api-empty" ? "API conectada sem fornecedor" : "Fallback local identificado";
+    var label = suggestion.source === "portal-fornecedor-api" ? "Estimativa com catálogo do fornecedor" : suggestion.source === "api-empty" ? "Catálogo sem produtos disponíveis" : "Estimativa local";
     var items = suggestion.items && suggestion.items.length ? '<ul class="inventory-items">' + suggestion.items.map(function(item) { return '<li><span>' + escapeHtml(item.category) + '</span><b>' + item.quantity + ' un.</b></li>'; }).join("") + '</ul>' : '<p class="inventory-empty-copy">Nenhum item real retornado pelo Portal do Fornecedor ainda.</p>';
-    return '<div class="summary-panel inventory-suggestion"><div class="inventory-suggestion-head"><span class="status-pill">' + escapeHtml(label) + '</span><strong>Pedido ' + escapeHtml(suggestion.orderId) + '</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p></div>' + items + '<small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
+    return '<div class="summary-panel inventory-suggestion"><div class="inventory-suggestion-head"><span class="status-pill">' + escapeHtml(label) + '</span><strong>Prévia de estoque</strong><p>Fornecedor: ' + escapeHtml(suggestion.supplier) + '</p></div>' + items + '<small>' + escapeHtml(suggestion.paymentNote) + '</small></div>';
   }
 
   function downloadProject(type) {
     var identity = getIdentity();
+    if(window.AutoZapBrandDownload && window.AutoZapBrandDownload.download(identity,type)) return;
     if (type === "logo") {
       if (identity.imageDataUrl) {
         var imageLink = document.createElement("a");
