@@ -742,7 +742,7 @@
     try {
       var image = null;
       var signature = identitySignature();
-      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length) {
+      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.source === "autozap-start-image-api"; })) {
         await ensurePresentationAssets(identity);
         project.apiStatus.image = identity.imageSource === "autozap-start-image-api" ? "cached" : "local-cached";
         project.apiStatus.mockups = "cached";
@@ -829,7 +829,7 @@
   async function generateVisualMockups(api, identity) {
     identity = identity || project.identity || generateIdentityMock();
     var signature = identitySignature();
-    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length) {
+    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.source === "autozap-start-image-api"; })) {
       project.apiStatus.mockups = "cached";
       project.identity = identity;
       saveProject();
@@ -909,18 +909,6 @@
   }
 
   async function generateSingleMockup(api, identity, spec) {
-    var assetSet = CURATED_MOCKUP_ASSETS[spec.type];
-    if (assetSet) {
-      var curatedAsset = paletteIsLight(project.brand.colors) ? assetSet.dark : assetSet.light;
-      return {
-        type: spec.type,
-        title: spec.title,
-        imageDataUrl: curatedAsset,
-        mimeType: "image/png",
-        model: "curated-asset",
-        source: "autozap-start-curated-mockup"
-      };
-    }
     try {
       var response = await api.generateStartImage(mockupImagePayload(identity, spec));
       var image = normalizeImageResponse(response);
