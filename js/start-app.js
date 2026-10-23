@@ -432,7 +432,7 @@
   function renderPresentationVisual() {
     var identity = getIdentity();
     var logo = brandAssetMarkup(identity);
-    var imageNote = (identity.logoPngDataUrl || identity.imageDataUrl) ? '<small class="asset-status success">Logo rasterizada em PNG e aplicada nos mockups.</small>' : '<small class="asset-status warning">Logo provisoria. A apresentacao segue com a versao de espera.</small>';
+    var imageNote = (identity.logoPngDataUrl || identity.imageDataUrl) ? '<small class="asset-status success">Sua logo e as aplicações da marca.</small>' : '<small class="asset-status warning">Logo provisoria. A apresentacao segue com a versao de espera.</small>';
     return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo respeita nome, estilo, produtos, mensagem e cores escolhidas no projeto.") +
       '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logo + imageNote + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
@@ -562,6 +562,13 @@
   }
 
   function handleAction(action) {
+    if (action === "refresh-mockups") {
+      var retry = builder.querySelector('[data-action="refresh-mockups"]');
+      if (retry && retry.disabled) return;
+      if (retry) { retry.disabled = true; retry.textContent = "Aplicando sua marca..."; }
+      project.apiStatus.mockupError = "";
+      return generateVisualMockups(apiClient(), project.identity).finally(function() { saveProject(); render(); });
+    }
     if (action === "next") return next();
     if (action === "back") return back();
     if (action === "generate") return startGeneration();
@@ -742,7 +749,7 @@
     try {
       var image = null;
       var signature = identitySignature();
-      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.source === "autozap-start-image-api"; })) {
+      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true; })) {
         await ensurePresentationAssets(identity);
         project.apiStatus.image = identity.imageSource === "autozap-start-image-api" ? "cached" : "local-cached";
         project.apiStatus.mockups = "cached";
@@ -829,7 +836,7 @@
   async function generateVisualMockups(api, identity) {
     identity = identity || project.identity || generateIdentityMock();
     var signature = identitySignature();
-    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.source === "autozap-start-image-api"; })) {
+    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true; })) {
       project.apiStatus.mockups = "cached";
       project.identity = identity;
       saveProject();
@@ -912,13 +919,14 @@
     try {
       var response = await api.generateStartImage(mockupImagePayload(identity, spec));
       var image = normalizeImageResponse(response);
-      if (!image) return null;
+      if (!image) { project.apiStatus.mockupError = response && (response.message || response.error) || "Não foi possível gerar esta aplicação agora."; return null; }
       return {
         type: spec.type,
         title: spec.title,
         imageDataUrl: image.imageDataUrl,
         mimeType: image.mimeType || "image/png",
         model: image.model || "",
+        integratedLogo: image.integratedLogo === true,
         source: "autozap-start-image-api"
       };
     } catch (error) {
@@ -929,55 +937,18 @@
 
   function mockupImageSpecs(identity) {
     return [
-      {
-        type: "storefront",
-        title: "Fachada real da loja",
-        prompt: "Crie uma imagem realista de fachada de loja de celulares moderna para a marca " + identity.name + ". Deixe um letreiro grande, limpo e sem texto ou logotipo, com espaço livre para aplicar a logo depois. A fachada deve parecer uma loja real de smartphones e acessorios, com vitrine, iluminacao profissional e cores da marca."
-      },
-      {
-        type: "tshirt",
-        title: "Camiseta da equipe",
-        prompt: "Crie uma imagem realista de camiseta de equipe para loja de celulares. Deixe a area do peito limpa, sem texto ou logotipo, para aplicar a logo depois. Visual profissional, tecido real, fundo limpo de estudio, cores da marca."
-      },
-      {
-        type: "business-card",
-        title: "Cartao de visita",
-        prompt: "Crie uma imagem realista de cartao de visita premium para uma loja de celulares chamada " + identity.name + ". Deixe uma area limpa no cartao, sem texto ou logotipo, para aplicar a logo depois. Mostrar o cartao sobre uma mesa limpa, com acabamento profissional e paleta da marca."
-      },
-      {
-        type: "bag",
-        title: "Sacola e embalagem",
-        prompt: "Crie uma imagem realista de sacola e embalagem de entrega para loja de celulares chamada " + identity.name + ". Deixe a frente da sacola limpa, sem texto ou logotipo, para aplicar a logo depois. Use acabamento premium, embalagem limpa, cores da marca e contexto de acessorios de celular."
-      }
+      {type: "storefront", title: "Fachada da loja", prompt: "Photorealistic exterior of a compact premium smartphone shop. Place the reference logo once as dimensional signage directly on the dark navy fascia above the glass entrance, aligned with the building perspective. Clean architectural photography, daylight, full storefront visible."},
+      {type: "tshirt", title: "Camiseta da equipe", prompt: "Premium plain navy polo shirt, small embroidered reference logo on the left chest, following fabric folds and lighting. Professional studio product photograph, pale grey background, realistic fine cotton texture, elegant restrained branding."},
+      {type: "business-card", title: "Cartão de visita", prompt: "Premium dark navy business card resting on a light stone desk, three-quarter perspective. Reference logo printed once directly on the card, white lettering and original accent colors, subtle embossed finish, soft studio shadows. No contact details."},
+      {type: "bag", title: "Sacola da loja", prompt: "A premium dark navy paper shopping bag with rope handles on a light studio surface. Reference logo printed once directly on the paper, centered and following its perspective and texture, white lettering and original accent colors. No person, no other packaging."}
     ];
   }
 
   function mockupImagePayload(identity, spec) {
-    var logoImageReference = identity.logoPngDataUrl || identity.imageDataUrl || "";
-    var hasLogoReference = Boolean(logoImageReference);
-    var prompt = [
-      "Nao crie, nao escreva e nao redesenhe logotipo ou nome da marca dentro da imagem. O site vai aplicar a logo original por cima depois.",
-      hasLogoReference ? "Use a logo do campo logoImageDataUrl apenas como referencia de paleta e estilo, sem copiar texto na imagem." : "Use a identidade da etapa anterior apenas como referencia de paleta e estilo.",
-      spec.prompt,
-      "Nome da loja: " + identity.name + ".",
-      "Slogan: " + (identity.slogan || project.brand.slogan || "") + ".",
-      "Estilo escolhido pelo usuario: " + (project.brand.style || "") + ".",
-      "Tipo de logotipo escolhido: " + (project.brand.logoStyle || "") + ".",
-      "Mensagem da marca: " + (project.brand.message || "") + ".",
-      "Produtos: " + (project.brand.products.length ? project.brand.products.join(", ") : "celulares e acessorios") + ".",
-      "Paleta: " + project.brand.colors.join(", ") + ".",
-      "A imagem deve parecer um mockup real, nao um card de interface."
-    ].join(" ");
     return {
-      prompt: prompt,
+      prompt: "Use the exact logo artwork in reference image 0. Preserve its lettering, symbol and proportions. " + spec.prompt + " Treat the background of the reference as the product surface, not as a separate square. No sticker, no floating rectangle, no frame, no inset image. No extra words, no slogan, no invented logo, no repeated branding. Integrate the artwork naturally into the material. Professional brand presentation photograph.",
       storeName: identity.name,
-      description: spec.title,
-      style: [project.brand.style, project.brand.logoStyle, "mockup realista"].filter(Boolean).join(", "),
-      colors: project.brand.colors.slice(),
-      logo: identity.logo || "",
-      logoSvg: identity.logoSvg || "",
-      logoImageDataUrl: logoImageReference,
-      referenceImageDataUrl: logoImageReference,
+      referenceImageDataUrl: identity.logoPngDataUrl || identity.imageDataUrl || "",
       source: "autozap-start-mockup-" + spec.type
     };
   }
@@ -1016,7 +987,7 @@
     if (!dataUrl && imageBase64) {
       dataUrl = String(imageBase64).indexOf("data:") === 0 ? imageBase64 : "data:" + mimeType + ";base64," + imageBase64;
     }
-    return dataUrl ? { imageDataUrl: dataUrl, mimeType: mimeType, model: source.model || "" } : null;
+    return dataUrl ? { imageDataUrl: dataUrl, mimeType: mimeType, model: source.model || "", integratedLogo: source.integratedLogo === true } : null;
   }
 
   function findImagePayload(value) {
@@ -1145,20 +1116,16 @@
     return logoMarkup(ensureLogoSvg(identity));
   }
 
-  function renderBrandMockups(identity, logoMarkupText) {
-    var compactLogo = '<div class="mini-logo">' + logoMarkupText + '</div>';
-    var mockups = Array.isArray(identity.mockups) ? identity.mockups : [];
-    var real = mockupsByType(mockups);
-    var storefront = real.storefront ? realMockupCard(real.storefront, "storefront", identity) : '<article class="mockup-card storefront-mockup"><div class="storefront-sign">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><div class="storefront-window"><span>Smartphones</span><span>Acessorios</span></div><small>Fachada da loja</small></article>';
-    var tshirt = real.tshirt ? realMockupCard(real.tshirt, "tshirt", identity) : '<article class="mockup-card tshirt-mockup"><div class="shirt-shape"><span></span>' + compactLogo + '</div><small>Camiseta da equipe</small></article>';
-    var card = real["business-card"] ? realMockupCard(real["business-card"], "business-card", identity) : '<article class="mockup-card card-mockup"><div class="business-card-front">' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong><span>' + escapeHtml(identity.slogan) + '</span></div><small>Cartao de visita</small></article>';
-    var bag = real.bag ? realMockupCard(real.bag, "bag", identity) : '<article class="mockup-card bag-mockup"><div class="bag-shape"><i></i>' + compactLogo + '<strong>' + escapeHtml(identity.name) + '</strong></div><small>Sacola e embalagem</small></article>';
-    return [
-      storefront,
-      tshirt,
-      card,
-      bag
-    ].join("");
+  function renderBrandMockups(identity) {
+    var real = mockupsByType(Array.isArray(identity.mockups) ? identity.mockups : []);
+    var missing = false;
+    var cards = mockupImageSpecs(identity).map(function(spec) {
+      if (real[spec.type] && real[spec.type].integratedLogo === true) return realMockupCard(real[spec.type], spec.type, identity);
+      missing = true;
+      return '<article class="mockup-card"><strong>' + escapeHtml(spec.title) + '</strong><p>A aplicação da sua logo ainda não está pronta.</p></article>';
+    }).join("");
+    if (missing) cards += '<div style="grid-column:1/-1"><button class="builder-primary" data-action="refresh-mockups">Atualizar aplicações da marca</button><p role="status">' + escapeHtml(project.apiStatus.mockupError || "Sua logo será mantida.") + '</p></div>';
+    return cards;
   }
 
   function mockupsByType(mockups) {
@@ -1169,15 +1136,7 @@
   }
 
   function realMockupCard(mockup, modifier, identity) {
-    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + realLogoOverlay(identity, modifier) + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Imagem gerada e salva com logo original aplicada</small></div></article>';
-  }
-
-  function realLogoOverlay(identity, modifier) {
-    var logoSrc = identity && (identity.logoPngDataUrl || identity.imageDataUrl);
-    if (logoSrc) {
-      return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '"><img src="' + escapeAttr(logoSrc) + '" alt="Logo original de ' + escapeAttr(identity.name) + '"></div>';
-    }
-    return '<div class="real-brand-overlay overlay-' + escapeAttr(modifier) + '">' + logoMarkup(ensureLogoSvg(identity || getIdentity())) + '</div>';
+    return '<article class="mockup-card real-image-mockup real-' + escapeAttr(modifier) + '"><img class="real-mockup-bg" src="' + escapeAttr(mockup.imageDataUrl) + '" alt="' + escapeAttr(mockup.title) + '">' + '<div class="real-mockup-label"><strong>' + escapeHtml(mockup.title) + '</strong><small>Prévia da sua marca</small></div></article>';
   }
 
   function sanitizeColor(value, fallback) {

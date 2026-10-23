@@ -933,7 +933,8 @@ const AutoZapAPI = (() => {
       style: limitPrompt(payload.style || "moderno, tecnológico, premium", 80),
       colors: Array.isArray(payload.colors) ? payload.colors.slice(0, 6) : [],
       logo: limitPrompt(payload.logo, 80),
-      // FLUX text-to-image receives text only; the presentation applies the original logo locally.
+      // Mockups use the original logo as a reference; never send credentials to the client.
+      referenceImageDataUrl: /^autozap-start-mockup-/.test(payload.source || "") && typeof payload.referenceImageDataUrl === "string" ? payload.referenceImageDataUrl : undefined,
       source: /^autozap-start(?:-desktop|-mockup-[a-z-]+)?$/.test(payload.source || "") ? payload.source : "autozap-start",
     };
     const response = await apiStartImage(requestPayload);
