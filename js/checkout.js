@@ -16,7 +16,7 @@
       async function request(path,options={}){
         if(!api?.apiRequest) throw Error('O serviço de pedidos está indisponível. Tente novamente mais tarde.');
         const result=await api.apiRequest(path,{...options,startSession:true});
-        if(!result?.ok) throw Error('Não foi possível concluir. Confira os dados e tente novamente; nenhum pagamento foi confirmado.');
+        if(!result?.ok) {const messages={supplier_receiving_not_configured:'Um fornecedor ainda não cadastrou o Pix no Portal. Consulte-o antes de solicitar este pedido.',product_unavailable:'Um produto ficou indisponível. Atualize o catálogo.',stock_or_price_unavailable:'O estoque ou preço mudou. Atualize o catálogo.',invalid_order_state:'O pedido mudou de situação. Atualize antes de continuar.'};throw Error(messages[result?.data?.error || result?.error] || 'Não foi possível concluir. Confira os dados e tente novamente; nenhum pagamento foi confirmado.');}
         return result.data || result;
       }
       function showOrders(){

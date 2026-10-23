@@ -95,6 +95,13 @@
   var intro = document.querySelector("[data-intro]");
 
   var project = loadProject();
+  var assetsReady = window.AutoZapBrandStorage ? window.AutoZapBrandStorage.get(STORAGE_KEY).then(function(saved) {
+    if(saved && project.identity && saved.name===project.identity.name && saved.cacheKey===project.identity.cacheKey){
+      project.identity.logoPngDataUrl=saved.logoPngDataUrl || saved.imageDataUrl;
+      project.identity.imageDataUrl=saved.imageDataUrl || saved.logoPngDataUrl;
+      project.identity.mockups=saved.mockups || project.identity.mockups;
+    }
+  }).catch(function(){project.apiStatus.storage="assets_unavailable";}) : Promise.resolve();
   bindLanding();
   bindBuilderDelegation();
   prepareLanding();
@@ -151,21 +158,27 @@
   }
 
   function saveProject() {
+    var snapshot=JSON.parse(JSON.stringify(project));
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(snapshot)));
       delete project.apiStatus.storage;
-    } catch (error) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProject(project, true)));
-      } catch (innerError) {
-        project.apiStatus.storage = innerError && innerError.message || "local_storage_unavailable";
-      }
+    } catch(error) { project.apiStatus.storage="local_storage_unavailable"; }
+    if(window.AutoZapBrandStorage && snapshot.identity && (snapshot.identity.logoPngDataUrl || snapshot.identity.imageDataUrl)) {
+      return window.AutoZapBrandStorage.put(STORAGE_KEY,snapshot.identity).then(function(){
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(storageSafeProject(snapshot,true)));
+        delete project.apiStatus.storage;
+      }).catch(function(){project.apiStatus.storage="assets_save_failed";});
     }
+    return Promise.resolve();
   }
 
   function storageSafeProject(source, compact) {
     var snapshot = JSON.parse(JSON.stringify(source || {}));
     if (snapshot.identity) {
+      if(compact && window.AutoZapBrandStorage) {
+        delete snapshot.identity.logoPngDataUrl;
+        if(Array.isArray(snapshot.identity.mockups)) snapshot.identity.mockups=snapshot.identity.mockups.map(function(m){var copy=Object.assign({},m);delete copy.imageDataUrl;return copy;});
+      }
       delete snapshot.identity.imageDataUrl;
       delete snapshot.identity.imageBase64;
       delete snapshot.identity.apiRaw;
@@ -202,7 +215,7 @@
   function bindLanding() {
     document.querySelectorAll("[data-action='start-project']").forEach(function(button) {
       button.addEventListener("click", function() {
-        startIntro();
+        assetsReady.then(startIntro);
       });
     });
   }
@@ -424,7 +437,7 @@
     return header("Identidade pronta", "Sua identidade visual esta pronta.", "A marca abaixo respeita nome, estilo, produtos, mensagem e cores escolhidas no projeto.") +
       '<div class="presentation-grid"><div class="brand-board visual-brand-board" style="--brand-primary:' + escapeAttr(identity.colors[0]) + '">' + logo + imageNote + '<h3>' + escapeHtml(identity.name) + '</h3><p>' + escapeHtml(identity.slogan) + '</p><div class="swatches">' + identity.colors.map(swatch).join("") + '</div><small>Tipografia sugerida: ' + escapeHtml(identity.typography) + '</small></div>' +
       '<div class="mockup-grid visual-mockups">' + renderBrandMockups(identity, logo) + '</div></div>' +
-      '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo SVG</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
+      '<div class="summary-panel"><strong>Tela-resumo</strong><p>Marca: ' + escapeHtml(identity.name) + ' | Paleta: ' + identity.colors.map(escapeHtml).join(", ") + ' | Slogan: ' + escapeHtml(identity.slogan) + '</p><div class="download-actions"><button class="builder-primary" type="button" data-download="identity">Baixar identidade visual</button><button class="builder-secondary" type="button" data-download="logo">Baixar logotipo</button><button class="builder-secondary" type="button" data-download="materials">Baixar materiais</button></div></div>' +
       actions("Continuar projeto", true);
   }
 
@@ -558,8 +571,7 @@
     if (action === "mei-info") { window.open(GOV_MEI_URL, "_blank", "noreferrer"); return; }
     if (action === "review") return goTo("presentation");
     if (action === "save-exit") {
-      saveProject();
-      alert(project.apiStatus.storage ? "O navegador não conseguiu salvar tudo. Baixe seus materiais antes de fechar." : "Progresso salvo neste navegador.");
+      return saveProject().then(function(){alert(project.apiStatus.storage ? "O navegador não conseguiu salvar tudo. Baixe seus materiais antes de fechar." : "Progresso salvo neste navegador.");});
     }
   }
 
@@ -727,7 +739,7 @@
     try {
       var image = null;
       var signature = identitySignature();
-      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true; })) {
+      if (identity && identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true && Boolean(item.imageDataUrl); })) {
         await ensurePresentationAssets(identity);
         project.apiStatus.image = identity.imageSource === "autozap-start-image-api" ? "cached" : "local-cached";
         project.apiStatus.mockups = "cached";
@@ -814,7 +826,7 @@
   async function generateVisualMockups(api, identity) {
     identity = identity || project.identity || generateIdentityMock();
     var signature = identitySignature();
-    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true; })) {
+    if (identity.cacheKey === signature && Array.isArray(identity.mockups) && identity.mockups.length === mockupImageSpecs(identity).length && identity.mockups.every(function(item) { return item.integratedLogo === true && Boolean(item.imageDataUrl); })) {
       project.apiStatus.mockups = "cached";
       project.identity = identity;
       saveProject();
@@ -1096,7 +1108,7 @@
     var real = mockupsByType(Array.isArray(identity.mockups) ? identity.mockups : []);
     var missing = false;
     var cards = mockupImageSpecs(identity).map(function(spec) {
-      if (real[spec.type] && real[spec.type].integratedLogo === true) return realMockupCard(real[spec.type], spec.type, identity);
+      if (real[spec.type] && real[spec.type].integratedLogo === true && real[spec.type].imageDataUrl) return realMockupCard(real[spec.type], spec.type, identity);
       missing = true;
       return '<article class="mockup-card"><strong>' + escapeHtml(spec.title) + '</strong><p>A aplicação da sua logo ainda não está pronta.</p></article>';
     }).join("");
