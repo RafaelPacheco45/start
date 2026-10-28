@@ -395,7 +395,7 @@
     builder.hidden = false;
     intro.hidden = true;
     shell.dataset.mode = "builder";
-    builder.innerHTML = '<section class="generation-screen"><div class="generation-card minimal-generation"><img class="generation-logo" src="./assets/autozap-logo-mark.png" alt="AutoZap"><span class="loading-ring" aria-hidden="true"></span><h2>Gerando identidade</h2><p data-generation-message>' + generationMessages[0] + '</p><small data-generation-status>Conectando ao AutoZap Start.</small></div></section>';
+    builder.innerHTML = '<section class="generation-screen"><div class="generation-card minimal-generation"><div class="zappy-loader" aria-label="Zappy preparando sua identidade"><img class="generation-logo" src="./assets/autozap-logo-mark.png" alt="Zappy"><span class="zappy-dizzy" aria-hidden="true">✦ · ✧</span><span class="zappy-splash" aria-hidden="true"></span></div><h2>Gerando identidade</h2><p data-generation-message>' + generationMessages[0] + '</p><small data-generation-status>Conectando ao AutoZap Start.</small></div></section>';
     var index = 0;
     var apiFinished = false;
     var finishedWithFallback = false;
@@ -416,7 +416,8 @@
       if (apiFinished && index >= generationMessages.length) {
         clearInterval(timer);
         if (finishedWithFallback) project.apiStatus.identity = "fallback";
-        goTo("presentation");
+        builder.querySelector(".zappy-loader").classList.add("is-dizzy");
+        setTimeout(function() { goTo("presentation"); }, 1700);
       }
     }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 80 : 620);
   }
@@ -836,12 +837,13 @@
       project.apiStatus.mockups = Array.isArray(identity.mockups) && identity.mockups.length ? "cached" : "image-client-unavailable";
       return identity.mockups || [];
     }
-    var mockups = [];
     var specs = mockupImageSpecs(identity);
+    var mockups = identity.cacheKey === signature && Array.isArray(identity.mockups) ? identity.mockups.filter(function(item) { return item.integratedLogo === true && Boolean(item.imageDataUrl); }) : [];
+    var pendingSpecs = specs.filter(function(spec) { return !mockups.some(function(item) { return item.type === spec.type; }); });
     var concurrency = 2;
     if (!identity.logoPngDataUrl) await ensurePresentationAssets(identity);
-    for (var index = 0; index < specs.length; index += concurrency) {
-      var batch = specs.slice(index, index + concurrency);
+    for (var index = 0; index < pendingSpecs.length; index += concurrency) {
+      var batch = pendingSpecs.slice(index, index + concurrency);
       var results = await Promise.all(batch.map(function(spec) {
         return generateSingleMockup(api, identity, spec);
       }));

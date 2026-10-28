@@ -2060,3 +2060,21 @@ select.inventory-control {
 }
 
 .plan-card > a { text-align: center; text-decoration: none; }
+
+/* Generation fills the viewport; Zappy is the loading indicator. */
+.builder-view:has(.generation-screen) { padding: 0; background: #030812; }
+.zappy-loader { position: relative; width: 112px; height: 130px; display: grid; place-items: center; }
+.zappy-loader .generation-logo { width: 96px; height: 96px; animation: zappy-spin 1.35s linear infinite; }
+.zappy-dizzy { position: absolute; top: -6px; color: #ffe58c; font-size: 28px; opacity: 0; }
+.zappy-splash { position: absolute; top: 80px; left: 50%; width: 18px; height: 45px; border-radius: 40% 45% 50% 60%; background: linear-gradient(#b5ee58, #49c777); transform-origin: top; opacity: 0; }
+.zappy-splash::after { content: ""; position: absolute; bottom: -4px; left: -17px; width: 50px; height: 12px; background: #72d877; border-radius: 50%; }
+.zappy-loader.is-dizzy .generation-logo { animation: zappy-wobble 1.7s ease-in-out both; }
+.zappy-loader.is-dizzy .zappy-dizzy { animation: zappy-stars 1.7s ease-in-out both; }
+.zappy-loader.is-dizzy .zappy-splash { animation: zappy-splash 1.7s ease-in-out both; }
+@keyframes zappy-spin { to { transform: rotate(360deg); } }
+@keyframes zappy-wobble { 0% { transform: rotate(0); } 18% { transform: rotate(-22deg); } 36% { transform: rotate(18deg); } 55%, 78% { transform: rotate(-12deg) translateY(7px); } 100% { transform: rotate(0); } }
+@keyframes zappy-stars { 0%,100% { opacity: 0; } 15%,75% { opacity: 1; transform: translateX(7px) rotate(10deg); } 45% { transform: translateX(-7px) rotate(-10deg); } }
+@keyframes zappy-splash { 0%,45%,100% { opacity: 0; transform: scaleY(0); } 58%,78% { opacity: 1; transform: scaleY(1); } 90% { opacity: .4; transform: scaleY(.5) translateY(16px); } }
+/* This explicitly requested mascot animation remains visible in reduced-motion mode. */
+.zappy-loader .generation-logo { animation-duration: 1.35s !important; animation-iteration-count: infinite !important; }
+.zappy-loader.is-dizzy .generation-logo, .zappy-loader.is-dizzy .zappy-dizzy, .zappy-loader.is-dizzy .zappy-splash { animation-duration: 1.7s !important; animation-iteration-count: 1 !important; }

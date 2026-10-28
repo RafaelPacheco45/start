@@ -895,6 +895,7 @@ const AutoZapAPI = (() => {
       imageDataUrl: String(imageBase64).startsWith("data:") ? imageBase64 : `data:${mimeType};base64,${imageBase64}`,
       mimeType,
       model: source.model || raw.model || "",
+      integratedLogo: source.integratedLogo === true,
     };
   }
 
